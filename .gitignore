@@ -19,5 +19,6 @@ _build/
 setup.data
 setup.log
 
+# We want this so everyone can use Visual studio code properly Commented out for now.
 # Merlin configuring file for Vim and Emacs
-.merlin
+# .merlin

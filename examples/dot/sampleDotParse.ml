@@ -27,10 +27,10 @@ module DotInput =
     (B)
     (struct 
       let node (id,_) _ = match id with
-	| Dot_ast.Ident s
-	| Dot_ast.Number s
-	| Dot_ast.String s
-	| Dot_ast.Html s -> s
+        | Dot_ast.Ident s
+        | Dot_ast.Number s
+        | Dot_ast.String s
+        | Dot_ast.Html s -> s
       let edge _ = ()
     end)
 module Display = struct
@@ -52,4 +52,4 @@ let () =
   DotOutput.output_graph oc g;
   close_out oc
 
-let _ = Sys.command "dot -Tps tmp.dot | gv -"
+(*let _ = Sys.command "dot -Tps tmp.dot | gv -"*)
