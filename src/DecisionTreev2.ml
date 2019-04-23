@@ -42,7 +42,7 @@ module DTree = struct
       | -1 -> []
       | attr -> attr::(build_loop_list (attr - 1)) in
     let rec df_build x y attrs parent parent_attr depth = 
-      if (Feature_map.cardinal x) = 0 || (* Check if y list has only 1 type of value *)true then
+      if (Feature_map.cardinal x) = 0 || (* Check if y list has only 1 type of value. Perhaps use an entropy function and check if that is 0.*)true then
         (* At leaf node. Use y values to determine what the node should be.*)()
       else
         begin
@@ -72,13 +72,5 @@ module DTree = struct
             end
         end
     in df_build x_map y attr_map None 0 1
-
-
-  (* Maybe should try to use maps for x and y. The map for x would have the name of the feature be the key so you can use to look it up later and name the node.
-     You could use a map for y by having the key be an integer of the number of example so while going over the x's you can simply look up what the label is where
-     you are at. *)
-
-
-
 end
 
