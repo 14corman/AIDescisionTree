@@ -22,3 +22,63 @@ As of right now, we cannot run any test code in Visual Studios as the ocamlgraph
 
 # To test code
 You will need to run ```ocamlfind ocamlopt -o [name of executable] -linkpkg -package ocamlgraph [name of ocaml file to test 1].ml [name of ocaml file to test 2].ml [name of ocaml file to test 3].ml ...``` to build an executable that you will then be able to run through the command prompt to see if the file is working or not. The ocaml files 1, 2, 3, ... will be loaded in that order. So, if file 3 relies on file 2 then the order has to be 2 then 3 and not 3 then 2. If the files do not rely on each other then order does not matter. This will bring all the files together into an executable that can be run in 1 go. If you use 1 file then you will be testing just that file when it executes.
+
+
+# Example outputs
+## CreateDot
+The CreateDot.exe file should have this output in a command prompt:
+```
+digraph G {
+  root;
+  child_1;
+  child_2;
+
+
+  root -> child_1;
+  root -> child_2;
+
+  }
+```
+
+## ParseDot
+The ParseDot.exe should be called as such:
+``` cmd
+ParseDot.exe [name of dot file].dot
+```
+
+There is 1 input that is the name of the dot file to be parsed. If we pass in the file SampleTree.dot, then we should get 
+```
+digraph G {
+  "0";
+  "1";
+  "5";
+  "7";
+  "8";
+  "9";
+  "11";
+  "12";
+  "10";
+  "6";
+  "2";
+  "3";
+  "4";
+  
+  
+  "0" -> "1" [label=<f&#36;oo>, ];
+  "0" -> "2" [label=<f&#36;oo>, ];
+  "1" -> "5" [label=<f&#36;oo>, ];
+  "1" -> "6" [label=<f&#36;oo>, ];
+  "5" -> "7" [label=<f&#36;oo>, ];
+  "5" -> "8" [label=<f&#36;oo>, ];
+  "8" -> "9" [label=<f&#36;oo>, ];
+  "8" -> "10" [label=<f&#36;oo>, ];
+  "9" -> "11" [label=<f&#36;oo>, ];
+  "9" -> "12" [label=<f&#36;oo>, ];
+  "2" -> "3" [label=<f&#36;oo>, ];
+  "2" -> "4" [label=<f&#36;oo>, ];
+  
+  }
+
+```
+
+as output in a tmp.dot file.
