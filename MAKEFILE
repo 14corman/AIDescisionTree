@@ -1,0 +1,11 @@
+RESULT = testProgram
+SOURCES = \
+  src/DecisionTreev2.ml \
+  test/DecisionTreeTest.ml
+  
+LIBS = ocamlgraph/*
+
+PACKS = ocamlgraph
+  
+OCAMLMAKEFILE = OCamlMakefile
+include $(OCAMLMAKEFILE)
