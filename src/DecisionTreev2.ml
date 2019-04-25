@@ -126,15 +126,10 @@ module DTree = struct
               size := !size + 1;
               let v = G.V.create (string_of_int !size, (fst winner) ^ "<br/>" ^ "remainder: " ^ (string_of_float (snd winner))) in
               G.add_vertex g v;
-              if !size != 1 then
-                begin
-                  let e = G.E.create parent parent_attr v in
-                  G.add_edge_e g e;
-                end;
               (* Go over each branch of the winning node and see what the next featurue should be, or if the next node is a leaf. *)
               List.iter (fun a -> let new_y = partition_y a winning_var_list y in let entropy_y = entropy new_y in Printf.printf "Entropy check: %f\n" (entropy_y);
                           Printf.printf "New y: [%s]\n" (print_list new_y);
-                          if entropy_y <= 0.000001 && List.length new_y > 0 (* Leaf node because all labels are of 1 type.*)
+                          if (entropy_y <= 0.000001 && List.length new_y > 0) (* Leaf node because all labels are of 1 type.*)
                           then
                             begin
                               size := !size + 1; 
@@ -147,7 +142,8 @@ module DTree = struct
                             let entropy_old_y = entropy y in Printf.printf "Entropy check with old y: %f\n" (entropy_old_y);
                             Printf.printf "old y check: [%s]\n" (print_list y);
                             Printf.printf "New y: [%s]\n" (print_list new_y);
-                            if List.length new_y <= 0 then (* Leaf node because partition will have no labels to look at.*)
+                            (* Leaf node because partition will have no labels to look at or distributions between parent and child will be the same.*)
+                            if List.length new_y <= 0 || entropy_y = (snd winner) then 
                               begin
                                 size := !size + 1; 
                                 let majority = mode y in
@@ -157,9 +153,28 @@ module DTree = struct
                                 G.add_edge_e g leaf_edge
                               end 
                             else 
-                              df_build (partition_x a winning_var_list remove_winner) new_y new_attrs v a (depth + 1)) attr_list 
+                              df_build (partition_x a winning_var_list remove_winner) new_y new_attrs v a (depth + 1)) attr_list;
+              if fst (G.V.label parent) != "-1" then
+                begin
+                  let successors = G.succ g v in
+                  let successors_uniq = List.sort_uniq (fun x y -> Pervasives.compare x y) (List.fold_left (fun a vertex -> (snd (G.V.label vertex))::a) [] successors) in
+                  if List.length successors_uniq = 1 then
+                    begin
+                      let old_size = fst (G.V.label v) in
+                      G.remove_vertex g v;
+                      List.iter (fun vertex -> G.remove_vertex g vertex) successors;
+                      let new_v = G.V.create (old_size, List.hd successors_uniq) in
+                      G.add_vertex g new_v;
+                      let e = G.E.create parent parent_attr new_v in
+                      G.add_edge_e g e;
+                    end 
+                  else
+                    let e = G.E.create parent parent_attr v in
+                    G.add_edge_e g e;
+                end; 
             end
         end 
-    in df_build x_map y attr_map (G.V.create ("-1", "should not exist")) 0 1;  Dot.output_graph stdout g
+    in let dumby_vertex = G.V.create ("-1", "should not exist") in
+    df_build x_map y attr_map dumby_vertex 0 1; G.remove_vertex g dumby_vertex; g
 end
 

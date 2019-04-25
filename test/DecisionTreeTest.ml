@@ -32,4 +32,4 @@ let attrs = DTree.Feature_map.add "physician-fee-freeze" 1 attrs
 let attrs = DTree.Feature_map.add "el-salvador-aid" 1 attrs
 let attrs = DTree.Feature_map.add "religious-groups-in-school" 1 attrs;;
 
-let () = DTree.build_tree_v2 x y attrs
+let g = DTree.build_tree_v2 x y attrs in DTree.print_graph g
