@@ -12,7 +12,7 @@ If you have anything that could be added or changed to the project then create a
 Library is now included with the repository.
 
 # Information for Dot files
-You can find out more information on dot files [here](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) if you have not worked with them before.
+You can find out more information on dot files [here](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) if you have not worked with them before. Dot files can be viewed [here](https://dreampuf.github.io/GraphvizOnline/) by copying and pasting the output in the command line into the the interpreter on that page.
 
 # Working with Merlin server in Visual Studio code
 The ```.merlin``` file is what the merlin server looks at to see what should be loaded when parsing through code. You can look to [this](https://github.com/ocaml/merlin/wiki/project-configuration) to read more. The file shows where the source files are to link them all together using an ```S```. The ```B``` is to tell it where all the built files are. These let it be able to use the files to help you write code. For example, when writing the tree test file it helps by knowing where the built build tree file is to allow you to write program using that file. Will also put the given ocamlgraph library built files in this manner so we can program using ocamlgraph.
