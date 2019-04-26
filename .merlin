@@ -1,5 +1,6 @@
 S src/**
 
 B build/**
+B ocamlgraph/**
 
-PKG ocamlgraph
+#PKG ocamlgraph
