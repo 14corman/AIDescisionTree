@@ -1,27 +1,6 @@
-import sys
-
-def to_list(features, line, classIndx):
-	pieces = line.split(",")
-	return "[" + '; '.join((pieces[0:classIndx] + pieces[classIndx+1:])) + "]", pieces[classIndx]
-
-
-def to_map(features, line, classIndx):
-	i = 0
-	m = dict()
-	vals = line.split(",")
-	while i < classIndx:
-		m[features[i]] = vals[i]
-		i += 1
-
-	i += 1
-	while i < len(vals):
-		m[features[i-1]] = vals[i]
-		i += 1
-
-	return m, classIndx
-
-
 if __name__ == "__main__":
+	camlFile = open("Datasets.ml", "w")
+	camlFile.write("open DecisionTreev2")
 	for dataset in ["breast-cancer", "krkopt", "house-votes-84", "SPECT"]:
 		datafile = open("{}.data".format(dataset), "r")		
 		
@@ -30,7 +9,7 @@ if __name__ == "__main__":
 			classIndx = 0
 			features = ["age", "menopause", "tumor-size", "inv-nodes", "node-caps", "deg-malig", "breast", "breat-quad", "irradiat"]
 		elif dataset == "krkopt":
-			classes = ["draw", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"]
+			classes = ["draw", "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"]
 			classIndx = 6
 			features = ["White King File", "White King Rank", "White Rook File", "White Rook Rank", "Black King File", "Black King Rank"]
 		elif dataset == "house-votes-84":
@@ -45,11 +24,43 @@ if __name__ == "__main__":
 			print("Unsupported data set")
 			exit()
 
+		featureValueMap = {feature: {} for feature in features}
+		featureMap = { feature: [] for feature in features }
+		attrDefin = "let {}_attrs = DTree.Feature_map.empty\n\t|> ".format(dataset)
+		classMap = {classes[i]: str(i) for i in range(len(classes))}
+		classVals = []
+
 		for line in datafile:
 			if line.strip() == "":
 				break
-			atts, label = to_list(features, line.strip(), classIndx)
-			break
+			if ",?," in line:
+				continue
+			pieces = [t.strip() for t in line.split(",")]
+			for i in range(0, classIndx):
+				featureValueMap[features[i]].setdefault(pieces[i], str(len(featureValueMap[features[i]])))
+				featureMap[features[i]].append(featureValueMap[features[i]][pieces[i]])
+
+			classVals.append(classMap[pieces[classIndx]])
+			for i in range(classIndx+1, len(features)+1):
+				featureValueMap[features[i-1]].setdefault(pieces[i], str(len(featureValueMap[features[i-1]])))
+				featureMap[features[i-1]].append(featureValueMap[features[i-1]][pieces[i]])
 
 		datafile.close()
+
+		attrSizes = "let {}_feature_sizes DTree.Feature_map.empty\n\t|> ".format(dataset)
+		featureSizes = ["DTree.Feature_map.add \"{}\" {}".format(feature, len(featureValueMap[feature])) for feature in features]
+		attrSizes += "\n\t|> ".join(featureSizes) + "\n;;"
+		attrDefin += "\n\t|> ".join(["DTree.Feature_map.add \"{}\" [{}]".format(feature, "; ".join(featureMap[feature])) for feature in features]) + "\n;;"
+		classList = "let {}_classes [".format(dataset) + "; ".join(classVals) + "]\n;;"
+
+		tree = "let {}_tree = DTree.build_tree_v2 x y attrs ;;".format(dataset)
+
+		camlFile.write("\n\n")
+		for string in [attrDefin, classList, attrSizes, tree]:
+			camlFile.write("\n")
+			camlFile.write(string)
+
+	camlFile.write("\n")
+	camlFile.close()
+		
 
