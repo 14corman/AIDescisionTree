@@ -1,6 +1,6 @@
 if __name__ == "__main__":
 	camlFile = open("Datasets.ml", "w")
-	camlFile.write("open DecisionTreev2")
+	camlFile.write("open DecisionTree")
 	for dataset in ["breast-cancer", "krkopt", "house-votes-84", "SPECT"]:
 		datafile = open("{}.data".format(dataset), "r")		
 		
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 		attrDefin += "\n\t|> ".join(["DTree.Feature_map.add \"{}\" [{}]".format(feature, "; ".join(featureMap[feature])) for feature in features]) + "\n;;"
 		classList = "let {}_classes [".format(dataset) + "; ".join(classVals) + "]\n;;"
 
-		tree = "let {}_tree = DTree.build_tree_v2 x y attrs ;;".format(dataset)
+		tree = "let {}_tree = DTree.build_tree x y attrs ;;".format(dataset)
 
 		camlFile.write("\n\n")
 		for string in [attrDefin, classList, attrSizes, tree]:

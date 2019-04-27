@@ -1,11 +1,12 @@
-RESULT = testProgram
+RESULT = parseDotTestProgram
 SOURCES = \
-  src/DecisionTreev2.ml \
-  test/DecisionTreeTest.ml
+  src/DecisionTree.ml \
+  src/TreeClassifier.ml \
+  test/ParseDotTest.ml
   
 LIBS = ocamlgraph/*
 
-PACKS = ocamlgraph
+PACKS = ocamlgraph Str
   
 OCAMLMAKEFILE = OCamlMakefile
 include $(OCAMLMAKEFILE)
