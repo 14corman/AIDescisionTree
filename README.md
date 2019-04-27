@@ -9,7 +9,7 @@ If you need help with an issue, then comment on it so we can keep track of what 
 If you have anything that could be added or changed to the project then create an issue and use the "enhanced" label.
 
 # Getting ocamlgraph library
-Library is now included with the repository.
+Library is now included with the repository. You may need to install ocamlgraph when trying to run make if you run into the error saying ```module Graph cannot be found```. To do this run ```opam install ocamlgraph```. You should also make sure that the Makfile has your structure that your directories are in. You should run the ```make``` command from within the directory that this repository is made from. The directory should have the src, test, ocamlgraph, and build folders inside of it.
 
 # Information for Dot files
 You can find out more information on dot files [here](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) if you have not worked with them before. Dot files can be viewed [here](https://dreampuf.github.io/GraphvizOnline/) by copying and pasting the output in the command line into the the interpreter on that page.
