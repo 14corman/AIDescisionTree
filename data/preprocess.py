@@ -2,6 +2,7 @@ if __name__ == "__main__":
 	camlFile = open("Datasets.ml", "w")
 	camlFile.write("open DecisionTree")
 	for dataset in ["breast-cancer", "krkopt", "house-votes-84", "SPECT"]:
+		csv = open("{}.csv".format(dataset), "w")
 		datafile = open("{}.data".format(dataset), "r")		
 		
 		if dataset == "breast-cancer":
@@ -30,16 +31,27 @@ if __name__ == "__main__":
 		classMap = {classes[i]: str(i) for i in range(len(classes))}
 		classVals = []
 
+		csv.write("class," + ",".join(features) + "\n")
 		for line in datafile:
 			if line.strip() == "":
 				break
-			if ",?," in line:
-				continue
+	
+			# Split the line into the feature values
 			pieces = [t.strip() for t in line.split(",")]
+	
+			if classIndx == 0:	
+				# Write the csv with the features as headers
+				csv.write("{}".format(line))
+			else:
+				csv.write("{},{}".format(pieces[classIndx], pieces[:classIndx], pieces[classIndx+1:]))
+			
+
+			# Gather the examples' attribute values
 			for i in range(0, classIndx):
+				if pieces[i] == "?":
+					pass
 				featureValueMap[features[i]].setdefault(pieces[i], str(len(featureValueMap[features[i]])))
 				featureMap[features[i]].append(featureValueMap[features[i]][pieces[i]])
-
 			classVals.append(classMap[pieces[classIndx]])
 			for i in range(classIndx+1, len(features)+1):
 				featureValueMap[features[i-1]].setdefault(pieces[i], str(len(featureValueMap[features[i-1]])))
@@ -47,18 +59,23 @@ if __name__ == "__main__":
 
 		datafile.close()
 
+		# Build the variable strings for OCaml
 		attrSizes = "let {}_feature_sizes DTree.Feature_map.empty\n\t|> ".format(dataset)
 		featureSizes = ["DTree.Feature_map.add \"{}\" {}".format(feature, len(featureValueMap[feature])) for feature in features]
 		attrSizes += "\n\t|> ".join(featureSizes) + "\n;;"
 		attrDefin += "\n\t|> ".join(["DTree.Feature_map.add \"{}\" [{}]".format(feature, "; ".join(featureMap[feature])) for feature in features]) + "\n;;"
 		classList = "let {}_classes [".format(dataset) + "; ".join(classVals) + "]\n;;"
 
-		tree = "let {}_tree = DTree.build_tree x y attrs ;;".format(dataset)
+		tree = "let {}_tree = DTree.build_tree {}_attrs {}_classes {}_feature_sizes ;;".format(dataset, dataset, dataset, dataset)
 
+		# Write the OCaml file
 		camlFile.write("\n\n")
 		for string in [attrDefin, classList, attrSizes, tree]:
 			camlFile.write("\n")
 			camlFile.write(string)
+
+		csv.write("\n")
+		csv.close()
 
 	camlFile.write("\n")
 	camlFile.close()
