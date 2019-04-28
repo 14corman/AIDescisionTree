@@ -71,5 +71,5 @@ let parse (file : string) =
   )
 ;;
 
-(* let (feature_map, labels, feature_domain) = parse "../data/house-votes-84.csv" ;;
+(* let (feature_map, labels, value_map) = parse "../data/house-votes-84.csv" ;;
 *)
