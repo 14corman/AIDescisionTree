@@ -35,6 +35,8 @@ You will need to do a few things to before you can run the ```make``` command:
 
 3. The ```make``` command will produce more than just the executable. The executable will be made in the diractory that ```make``` was ran from, but byte code and native code will be generated for each ocaml file registed in the SRC option of the Makefile. These pieces of code will be found alongside the files in their respective folders. If you have updated any of the ocaml files in the src folder than you must take their byte code and native code files and copy & paste them into the build folder. Merlin uses the files in the build folder to tell you what is and is not available for each file while coding.
 
+Something else to mention is that the files in the SRC option of the Makefile are ordered in such a way that the first file does not depend on anything, file2 depends on file1, etc. A file can depend on multiple files before it such as the last file in the list should be the file that has runnable code which will depend on all files before it.
+
 
 # Example outputs
 ## CreateDot
