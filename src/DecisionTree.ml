@@ -120,8 +120,6 @@ module DTree = struct
                        let remainderVar = remainder value (Feature_map.find key attrs) y in
                        if remainderVar < (snd a) then (key, remainderVar) else a) x ("", 100000000.0)
 
-  let convert_dataset = true
-
   (* Take in a Map of features, a list of labels, and a map of the attributes for each feature.
      x_map = "feature name 1": [list of examples for feature]
             "feature name 2": [list of examples for feature] ...
