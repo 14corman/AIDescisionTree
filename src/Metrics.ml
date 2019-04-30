@@ -1,6 +1,4 @@
-(* open DecisionTree *)
-
-module Feature_map = Map.Make(String) ;;
+open DecisionTree
 
 let false_positive pred labels attr = List.fold_left2 (fun a p l -> if attr != l && l = p then a +. 1.0 else a) 0.0 pred labels
 let true_positive pred labels attr  = List.fold_left2 (fun a p l -> if attr = l && l = p then a +. 1.0 else a) 0.0 pred labels
@@ -45,13 +43,11 @@ let split xs size =
   in
   (* add the "left-overs" to the back of the target-list *)
   rs @ [r]
-;;
 
-(*
 let build_cross_feature x num_examples list_maps name = 
   let lists = split x num_examples in
   if List.length list_maps = 0 then
-    let maps = List.fold_left (fun a _ -> ((* DecisionTree.DTree. *) Feature_map.empty)::a) [] lists in
+    let maps = List.fold_left (fun a _ -> (DecisionTree.DTree.Feature_map.empty)::a) [] lists in
 
 
     let cross_validation k x y = 
@@ -64,4 +60,3 @@ let build_cross_feature x num_examples list_maps name =
           let random_list = List.fold_right (fun a label -> Random.bits ()::a) [] y in
           let k_list = build_loop_list k in
           let list_xs = List.fold_left (fun a _ -> ) [] k_list
-*)
