@@ -1,5 +1,5 @@
-(*open TreeClassifier
-include Feature_map*)
+(* open TreeClassifier ;;
+include Feature_map ;; *)
 open Printf ;;
 
 module Feature_map = Map.Make(String) ;;
@@ -42,34 +42,38 @@ let rec add_feats (feature_map : int list Feature_map.t) (value_map : int Featur
   | x, y -> failwith "Invalid input"
 ;;
 
+(* Parse the given csv into a list of Feature_map of the feature values,
+     a list of the class labels, and a map from the feature names to the number of unique values *)
 let parse (file : string) =
   let in_file = open_in file in
-  match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
-  | [] -> failwith (Printf.sprintf "Empty header in %s" file)
-  | (x :: []) -> failwith (Printf.sprintf "Only one column found in %s" file)
-  | (label :: features) -> (
-    let (feature_map,value_counts,feature_domain) = List.fold_right (fun feat (map1,map2,map3) ->
-                                                                       (Feature_map.add feat [] map1,
-                                                                        Feature_map.add feat 0 map2,
-                                                                        Feature_map.add feat Feature_map.empty map3))
-                                                                    features
-                                                                    (Feature_map.empty,Feature_map.empty,Feature_map.empty)
-    in
+  try
+    match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
+    | [] -> failwith (Printf.sprintf "Empty header in %s" file)
+    | (x :: []) -> failwith (Printf.sprintf "Only one column found in %s" file)
+    | (label :: features) -> (
+      let (feature_map,value_counts,feature_domain) = List.fold_right (fun feat (map1,map2,map3) ->
+                                                                         (Feature_map.add feat [] map1,
+                                                                          Feature_map.add feat 0 map2,
+                                                                          Feature_map.add feat Feature_map.empty map3))
+                                                                      features
+                                                                      (Feature_map.empty,Feature_map.empty,Feature_map.empty)
+      in
 
-    (* Add the values in the line to the feature maps *)
-    let rec readlines feat_map labels val_map feat_domain =
-      match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
-      | [] -> (feat_map, labels, val_map)
-      | (x :: []) -> (feat_map, labels, val_map)
-      | (ex_label :: ex_feats) ->
-        let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
-        readlines f_map (ex_label :: labels) v_map f_domain
-    in
-    Printf.printf "%s" label ;
-    Feature_map.iter (fun k v -> Printf.printf "\n%s" k) feature_map ;
-    readlines feature_map [] value_counts feature_domain
-  )
+      (* Add the values in the line to the feature maps *)
+      let rec readlines feat_map labels val_map feat_domain =
+        match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
+        | [] -> close_in in_file ; (feat_map, labels, val_map)
+        | (x :: []) -> close_in in_file ; (feat_map, labels, val_map)
+        | (ex_label :: ex_feats) ->
+          let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
+          readlines f_map (ex_label :: labels) v_map f_domain
+      in
+      readlines feature_map [] value_counts feature_domain
+    )
+  with e ->
+    close_in_noerr in_file;
+    raise e
 ;;
 
-(* let (feature_map, labels, value_map) = parse "../data/house-votes-84.csv" ;;
-*)
+(* let (feature_map, labels, value_map) = parse "../data/house-votes-84.csv" ;; *)
+
