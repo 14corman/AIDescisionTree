@@ -147,7 +147,7 @@ module DTree = struct
       List.fold_left (fun map label -> if (Feature_map.mem (string_of_int label) map) then 
                          Feature_map.add (string_of_int label) ((Feature_map.find (string_of_int label) map) + 1) (Feature_map.remove (string_of_int label) map)
                        else
-                         Feature_map.add (string_of_int label) 0 map) Feature_map.empty list in
+                         Feature_map.add (string_of_int label) 1 map) Feature_map.empty list in
 
     (* Build the tree in a depth first traversal.*)
     let rec df_build x y attrs parent parent_attr depth =
