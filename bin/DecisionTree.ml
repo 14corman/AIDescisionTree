@@ -89,21 +89,26 @@ module DTree = struct
   let entropy ys = 
     let log2 = 1.0 /. log 2.0 in
     let (p, n) = List.partition  (fun y -> y = 1) ys in
-    Printf.printf "p: %i, n: %i\n" (List.length p) (List.length n);
+    (*Printf.printf "p: %i, n: %i\n" (List.length p) (List.length n);*)
     let num_p = float_of_int (List.length p) in
     let num_n = float_of_int (List.length n) in
     let combined = num_p +. num_n +. 0.0000000000000001 in
-    let p_combined = num_p /. combined +. 0.0000000000000001 in Printf.printf "Positive division: %f\n" (p_combined);
-    let n_combined = num_n /. combined +. 0.0000000000000001 in Printf.printf "Negative division: %f\n" (n_combined);
+    let p_combined = num_p /. combined +. 0.0000000000000001 in 
+    (*Printf.printf "Positive division: %f\n" (p_combined);*)
+    let n_combined = num_n /. combined +. 0.0000000000000001 in 
+    (*Printf.printf "Negative division: %f\n" (n_combined);*)
     let entropy_val = (0.0 -. p_combined) *. ((log p_combined) *. log2) -. n_combined *. ((log n_combined) *. log2) in
-    Printf.printf "Entropy value: %f\n" (entropy_val); entropy_val
+    (*Printf.printf "Entropy value: %f\n" (entropy_val);*)
+    entropy_val
 
   (* Need to change label = 1 to something else at some point if we need to do multiclass classification.
      Computes the remainder of labels and attributes. *)
   let rec remainder vars attr labels =
     if attr = -1 then 0.0 else 
-      let new_y = (List.fold_left2 (fun a var label -> if var = attr then label::a else a) [] vars labels) in Printf.printf "Results for attr: %i\n" (attr);
-      let result = ((float_of_int (List.length new_y)) /. (float_of_int (List.length labels))) *. (entropy new_y) in Printf.printf "Remainder for attr: %f\n\n" (result);
+      let new_y = (List.fold_left2 (fun a var label -> if var = attr then label::a else a) [] vars labels) in
+      (*Printf.printf "Results for attr: %i\n" (attr);*)
+      let result = ((float_of_int (List.length new_y)) /. (float_of_int (List.length labels))) *. (entropy new_y) in 
+      (*Printf.printf "Remainder for attr: %f\n\n" (result);*)
       (*Printf.printf "result: %f\n\n" (result);*)
       (remainder vars (attr - 1) labels) +. result
 
@@ -116,9 +121,10 @@ module DTree = struct
 
   (* Calculates the remainder for each feature and then chooses the feature with the lowest remainder. Return: (winning featurue name * remainder) *)
   let choose_var x y attrs = 
-    Feature_map.fold (fun key value a -> Printf.printf "Choose var (key) (value) (a) (y) (attr) : (%s) (%s) ((%s, %f)) (%s) (%i)\n" (key) (string_of_list value) (fst a) (snd a) (string_of_list y) (Feature_map.find key attrs);
-                       let remainderVar = remainder value (Feature_map.find key attrs) y in
-                       if remainderVar < (snd a) then (key, remainderVar) else a) x ("", 100000000.0)
+    Feature_map.fold (fun key value a -> 
+        (*Printf.printf "Choose var (key) (value) (a) (y) (attr) : (%s) (%s) ((%s, %f)) (%s) (%i)\n" (key) (string_of_list value) (fst a) (snd a) (string_of_list y) (Feature_map.find key attrs);*)
+        let remainderVar = remainder value (Feature_map.find key attrs) y in
+        if remainderVar < (snd a) then (key, remainderVar) else a) x ("", 100000000.0)
 
   (* Take in a Map of features, a list of labels, and a map of the attributes for each feature.
      x_map = "feature name 1": [list of examples for feature]
@@ -128,13 +134,14 @@ module DTree = struct
 
      attr_map = "feature name 1": number of attributes (boolean = 1 for 0 and 1, 2 would be for feature with 3 attributes)
                "feature name 2": number of attributes*)
-  let build_tree x_map y attr_map =
+  let build_tree x_map y attr_map depth =
     (*let num_classes = List.sort_uniq (fun x y -> if x > y then 1 else if x = y then -1 else 0) y in*)
 
     (* partiion_x and partition_y return the new x or y where every example that lines up with the winning feature and attribute is returned.*)
     let partition_x (attr : int) win_x x = Feature_map.fold (fun key value_list a -> 
         Feature_map.add key (List.fold_right2 (fun value win_val a -> if win_val = attr then value::a else a) value_list win_x []) a) x Feature_map.empty in
-    let partition_y attr x_val y = List.fold_right2 (fun val_x val_y a -> if Printf.printf "Partition y: (attr) (val_x) (val_y) : (%i) (%i) (%i)\n" (attr) (val_x) (val_y);
+    let partition_y attr x_val y = List.fold_right2 (fun val_x val_y a -> if 
+                                                      (*Printf.printf "Partition y: (attr) (val_x) (val_y) : (%i) (%i) (%i)\n" (attr) (val_x) (val_y);*)
                                                       val_x = attr then val_y::a else a) x_val y [] in
 
     (* Used to build up the list of attributes to spit on. Example: 2 -> [0; 1; 2] *)
@@ -150,8 +157,8 @@ module DTree = struct
                          Feature_map.add (string_of_int label) 1 map) Feature_map.empty list in
 
     (* Build the tree in a depth first traversal.*)
-    let rec df_build x y attrs parent parent_attr depth =
-      Printf.printf "Depth: %i\n" (depth);
+    let rec df_build x y attrs parent parent_attr depth max_depth =
+      (*Printf.printf "Depth: %i\n" (depth);*)
       let classes = List.sort_uniq (fun x y -> if x > y then 1 else if x = y then -1 else 0) y in
       if (List.length classes) <= 0 then
         failwith "Cannot do anything with no features"
@@ -168,7 +175,7 @@ module DTree = struct
           else
             begin
               let winner = choose_var x y attrs in
-              Printf.printf "Winner = %s" (fst winner); Printf.printf ": %f\n" (snd winner);
+              (*Printf.printf "Winner = %s" (fst winner); Printf.printf ": %f\n" (snd winner);*)
               let attr_list = build_loop_list (Feature_map.find (fst winner) attrs) in
               let new_attrs = Feature_map.remove (fst winner) attrs in
               let winning_var_list = Feature_map.find (fst winner) x in
@@ -177,8 +184,9 @@ module DTree = struct
               let v = G.V.create (string_of_int !size, (fst winner) ^ "<br/>" ^ "remainder: " ^ (string_of_float (snd winner)) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples y))) in
               G.add_vertex g v;
               (* Go over each branch of the winning node and see what the next featurue should be, or if the next node is a leaf. *)
-              List.iter (fun a -> let new_y = partition_y a winning_var_list y in let entropy_y = entropy new_y in Printf.printf "Entropy check: %f\n" (entropy_y);
-                          Printf.printf "New y: [%s]\n" (string_of_list new_y);
+              List.iter (fun a -> let new_y = partition_y a winning_var_list y in let entropy_y = entropy new_y in 
+                          (*Printf.printf "Entropy check: %f\n" (entropy_y);*)
+                          (*Printf.printf "New y: [%s]\n" (string_of_list new_y);*)
                           if (entropy_y <= 0.000001 && List.length new_y > 0) (* Leaf node because all labels are of 1 type.*)
                           then
                             begin
@@ -189,21 +197,22 @@ module DTree = struct
                               G.add_edge_e g leaf_edge
                             end 
                           else 
-                            let entropy_old_y = entropy y in Printf.printf "Entropy check with old y: %f\n" (entropy_old_y);
-                            Printf.printf "old y check: [%s]\n" (string_of_list y);
-                            Printf.printf "New y: [%s]\n" (string_of_list new_y);
+                            (*let entropy_old_y = entropy y in 
+                              Printf.printf "Entropy check with old y: %f\n" (entropy_old_y);*)
+                            (*Printf.printf "old y check: [%s]\n" (string_of_list y);*)
+                            (*Printf.printf "New y: [%s]\n" (string_of_list new_y);*)
                             (* Leaf node because partition will have no labels to look at or distributions between parent and child will be the same.*)
-                            if List.length new_y <= 0 || entropy_y = (snd winner) then 
-                              begin
-                                size := !size + 1; 
-                                let majority = mode y in
-                                let leaf = G.V.create (string_of_int !size, string_of_int (List.hd majority) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples y))) in 
-                                G.add_vertex g leaf;
-                                let leaf_edge = G.E.create v a leaf in
-                                G.add_edge_e g leaf_edge
-                              end 
-                            else 
-                              df_build (partition_x a winning_var_list remove_winner) new_y new_attrs v a (depth + 1)) attr_list;
+                          if List.length new_y <= 0 || entropy_y = (snd winner) then 
+                            begin
+                              size := !size + 1; 
+                              let majority = mode y in
+                              let leaf = G.V.create (string_of_int !size, string_of_int (List.hd majority) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples y))) in 
+                              G.add_vertex g leaf;
+                              let leaf_edge = G.E.create v a leaf in
+                              G.add_edge_e g leaf_edge
+                            end 
+                          else 
+                            df_build (partition_x a winning_var_list remove_winner) new_y new_attrs v a (depth + 1) max_depth) attr_list;
               if fst (G.V.label parent) != "-1" then
                 begin
                   let successors = G.succ g v in
@@ -225,7 +234,10 @@ module DTree = struct
                 end; 
             end
         end 
-    in let dumby_vertex = G.V.create ("-1", "should not exist") in
-    df_build x_map y attr_map dumby_vertex 0 1; G.remove_vertex g dumby_vertex; g
+    in 
+    let dumby_vertex = G.V.create ("-1", "should not exist") in
+    match depth with
+    | None -> df_build x_map y attr_map dumby_vertex 0 1 max_int; G.remove_vertex g dumby_vertex; g
+    | Some md -> df_build x_map y attr_map dumby_vertex 0 1 md; G.remove_vertex g dumby_vertex; g
 end;;
 
