@@ -63,7 +63,7 @@ let parse (file : string) =
           | (_ :: []) -> close_in in_file ; (feat_map, labels, val_map)
           | (ex_label :: ex_feats) ->
             let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
-            readlines f_map (ex_label :: labels) v_map f_domain
+            readlines f_map ((int_of_string ex_label) :: labels) v_map f_domain
         in
         readlines feature_map [] value_counts feature_domain
       )
