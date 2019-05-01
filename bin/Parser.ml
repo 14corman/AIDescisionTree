@@ -22,14 +22,14 @@ let rec add_feats (feature_map : int list DTree.Feature_map.t) (value_map : int 
         add_feats
           (update_map (fun l -> -1 :: l) x feature_map)
           value_map feature_domain xs ys
-      else 
+      else
         match DTree.Feature_map.find_opt y (DTree.Feature_map.find x feature_domain) with
         | Some c ->
           add_feats
             (update_map (fun l -> c :: l) x feature_map)
             value_map feature_domain xs ys
         | None ->
-          let updated_domain = update_map (fun map -> DTree.Feature_map.add y (DTree.Feature_map.find x value_map) map) x feature_domain in
+          let updated_domain = update_map (fun map -> DTree.Feature_map.add y ((DTree.Feature_map.find x value_map) + 1) map) x feature_domain in
           add_feats
             (update_map (fun l -> (DTree.Feature_map.find y (DTree.Feature_map.find x updated_domain)) :: l) x feature_map)
             (update_map (fun c -> c + 1) x value_map)
@@ -51,7 +51,7 @@ let parse (file : string) =
         (* Initialize the maps *)
         let (feature_map,value_counts,feature_domain) = List.fold_right (fun feat (map1,map2,map3) ->
             (DTree.Feature_map.add feat [] map1,
-             DTree.Feature_map.add feat 0 map2,
+             DTree.Feature_map.add feat ~-1 map2,
              DTree.Feature_map.add feat DTree.Feature_map.empty map3))
             features
             (DTree.Feature_map.empty,DTree.Feature_map.empty, DTree.Feature_map.empty |> DTree.Feature_map.add "class" DTree.Feature_map.empty)
@@ -62,18 +62,19 @@ let parse (file : string) =
           match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
           | [] -> close_in in_file ; (feat_map, labels, val_map)
           | (_ :: []) -> close_in in_file ; (feat_map, labels, val_map)
+          | (_ :: ex_feats) when List.mem "?" ex_feats -> readlines feat_map labels val_map feat_domain
           | (ex_label :: ex_feats) -> (
-            let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
-            let class_domain =
-              (* See if there was a new class label in this example *)
-              let domain = DTree.Feature_map.find "class" f_domain in
-              if (DTree.Feature_map.mem ex_label domain) then
-                domain
-              else
-                DTree.Feature_map.add ex_label (map_len domain) domain
-            in
-            readlines f_map ((DTree.Feature_map.find ex_label class_domain) :: labels) v_map (DTree.Feature_map.add "class" class_domain f_domain)
-          )
+              let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
+              let class_domain =
+                (* See if there was a new class label in this example *)
+                let domain = DTree.Feature_map.find "class" f_domain in
+                if (DTree.Feature_map.mem ex_label domain) then
+                  domain
+                else
+                  DTree.Feature_map.add ex_label (map_len domain) domain
+              in
+              readlines f_map ((DTree.Feature_map.find ex_label class_domain) :: labels) v_map (DTree.Feature_map.add "class" class_domain f_domain)
+            )
         in
         readlines feature_map [] value_counts feature_domain
       )

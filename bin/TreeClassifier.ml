@@ -26,7 +26,9 @@ let rec dfs g vertex x =
   if List.length edges = 0 then
     (snd (G.V.label vertex))
   else
-    let edge_label = Feature_map.find (fst (G.V.label vertex)) x in
+    let vertex_name = (get_name_from_label (snd (G.V.label vertex))) in
+    Printf.printf "edge to look for: %s\n" vertex_name;
+    let edge_label = Feature_map.find vertex_name x in
     let next_vertex = List.fold_left (fun a edge -> if G.E.label edge = edge_label then G.E.dst edge else a) vertex edges in
     dfs g next_vertex x
 
@@ -38,16 +40,17 @@ let classify_example g x = match find_root g with
   | None -> failwith "Tree does not have root"
   | Some root -> 
     let conversion = get_map_conversion g in
-    let new_x = Feature_map.fold (fun key value a -> match Feature_map.find_opt key conversion with
+    Printf.printf "Conversion map: %s\n" (str_of_str_map_w_key conversion);
+    (*let new_x = Feature_map.fold (fun key value a -> match Feature_map.find_opt key conversion with
         | None -> a
-        | Some label -> Feature_map.add label value a) x Feature_map.empty in
-    int_of_string  (List.hd (split (dfs g root new_x)))
+        | Some label -> Feature_map.add label value a) x Feature_map.empty in*)
+    int_of_string  (List.hd (split (dfs g root x)))
 
 (* Classifify a map list of examples. This will have the same structure as DTree.build_tree. It will return a list of classifications. *)
 let classify_examples g xs = 
   let take_next_examples x = Feature_map.fold (fun key value a -> Feature_map.add key (List.tl value) a) x Feature_map.empty in
   let rec compute_example g remain_x num_examples = if num_examples = 0 then [] else
-      let example = Feature_map.fold (fun key value a -> Feature_map.add key (List.hd value) a) remain_x Feature_map.empty in
+      let example = Feature_map.fold (fun key value a -> Feature_map.add key (List.hd value) a) remain_x Feature_map.empty in Printf.printf "Number of examples left: %i\n" (num_examples);
       (classify_example g example)::(compute_example g (take_next_examples remain_x) (num_examples - 1)) in
   let total_examples = List.length (snd (List.hd (Feature_map.bindings xs))) in
   compute_example g xs total_examples

@@ -1,22 +1,38 @@
-open DecisionTree
-
-let false_positive pred labels attr = List.fold_left2 (fun a p l -> if attr != l && l = p then a +. 1.0 else a) 0.0 pred labels
+let false_positive pred labels attr = List.fold_left2 (fun a p l -> if attr = l && l != p then a +. 1.0 else a) 0.0 pred labels
 let true_positive pred labels attr  = List.fold_left2 (fun a p l -> if attr = l && l = p then a +. 1.0 else a) 0.0 pred labels
 let false_negative pred labels attr  = List.fold_left2 (fun a p l -> if attr != l && l != p then a +. 1.0 else a) 0.0 pred labels
+let true_negative pred labels attr  = List.fold_left2 (fun a p l -> if attr != l && l = p then a +. 1.0 else a) 0.0 pred labels
 
-let rec f1_micro_average pred labels attr = 
-  let tp = List.fold_left2 (fun a p_list l_list -> a +. true_positive p_list l_list attr) 0.0 pred labels in
-  let fp = List.fold_left2 (fun a p_list l_list -> a +. false_positive p_list l_list attr) 0.0 pred labels in
-  let fn = List.fold_left2 (fun a p_list l_list -> a +. false_negative p_list l_list attr) 0.0 pred labels in
-  let (tp2, fp2, fn2) = f1_micro_average pred labels (attr - 1) in
-  (tp +. tp2, fp +. fp2, fn +. fn2)
+let rec f1_micro_sum pred labels attr = if attr = -1 then (0.0, 0.0, 0.0, 0.0) else
+    let tp = List.fold_left2 (fun a p_list l_list -> a +. true_positive p_list l_list attr) 0.0 pred labels in
+    let fp = List.fold_left2 (fun a p_list l_list -> a +. false_positive p_list l_list attr) 0.0 pred labels in
+    let fn = List.fold_left2 (fun a p_list l_list -> a +. false_negative p_list l_list attr) 0.0 pred labels in
+    let tn = List.fold_left2 (fun a p_list l_list -> a +. true_negative p_list l_list attr) 0.0 pred labels in
+    let (tp2, fp2, fn2, tn2) = f1_micro_sum pred labels (attr - 1) in
+    (tp +. tp2, fp +. fp2, fn +. fn2, tn +. tn2)
+
+let rec print_confusion_matrix pred labels attr =
+  if attr != -1 then
+    let tp = true_positive pred labels attr in
+    let fp = false_positive pred labels attr in
+    let fn = false_negative pred labels attr in
+    let tn = true_negative pred labels attr in
+    Printf.printf "Matrix for attr: %i\n" (attr);
+    Printf.printf "        Positive | Negative \n";
+    Printf.printf "True  | %f | %f\n" (tp) (tn);
+    Printf.printf "-------------------\n";
+    Printf.printf "False | %f | %f\n\n" (fp) (fn);
+    print_confusion_matrix pred labels  (attr - 1)
+
 
 let f1_score pred labels attr =
-  let (tp, fp, fn) = f1_micro_average pred labels attr in
+  let (tp, fp, fn, _) = f1_micro_sum pred labels attr in
   let precision tp fp = tp /. (tp +. fp) in
   let recall tp fn = tp /. (tp +. fn) in 
   let p = precision tp fp in
   let r = recall tp fn in
+  Printf.printf "Precision: %f\n" (p);
+  Printf.printf "Recall: %f\n" (r);
   2.0 *. (p *. r) /. (p +. r)
 
 (*let shuffle d rand =
