@@ -1,7 +1,9 @@
 if __name__ == "__main__":
-	camlFile = open("Datasets.ml", "w")
-	camlFile.write("open DecisionTree")
+	# camlFile = open("Datasets.ml", "w")
+	# camlFile.write("open DecisionTree")
 	for dataset in ["breast-cancer", "krkopt", "house-votes-84", "SPECT"]:
+		if dataset != "krkopt":
+			continue
 		csv = open("{}.csv".format(dataset), "w")
 		datafile = open("{}.data".format(dataset), "r")		
 		
@@ -43,7 +45,7 @@ if __name__ == "__main__":
 				# Write the csv with the features as headers
 				csv.write("{}".format(line))
 			else:
-				csv.write("{},{}".format(pieces[classIndx], pieces[:classIndx], pieces[classIndx+1:]))
+				csv.write("{},{}\n".format(pieces[classIndx], ','.join(pieces[:classIndx] + pieces[classIndx+1:])))
 			
 
 			# Gather the examples' attribute values
@@ -60,7 +62,7 @@ if __name__ == "__main__":
 		datafile.close()
 
 		# Build the variable strings for OCaml
-		attrSizes = "let {}_feature_sizes DTree.Feature_map.empty\n\t|> ".format(dataset)
+		'''attrSizes = "let {}_feature_sizes DTree.Feature_map.empty\n\t|> ".format(dataset)
 		featureSizes = ["DTree.Feature_map.add \"{}\" {}".format(feature, len(featureValueMap[feature])) for feature in features]
 		attrSizes += "\n\t|> ".join(featureSizes) + "\n;;"
 		attrDefin += "\n\t|> ".join(["DTree.Feature_map.add \"{}\" [{}]".format(feature, "; ".join(featureMap[feature])) for feature in features]) + "\n;;"
@@ -73,11 +75,11 @@ if __name__ == "__main__":
 		for string in [attrDefin, classList, attrSizes, tree]:
 			camlFile.write("\n")
 			camlFile.write(string)
-
+		'''
 		csv.write("\n")
 		csv.close()
 
-	camlFile.write("\n")
-	camlFile.close()
+	# camlFile.write("\n")
+	# camlFile.close()
 		
 
