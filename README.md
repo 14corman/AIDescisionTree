@@ -20,7 +20,14 @@ The ```.merlin``` file is what the merlin server looks at to see what should be 
 Dune builds the merlin files for us automatically when we run build, so the only reason to know the above is if something is still wrong with the merlin files when loaded in viual studio code.
 
 # Running code in Visual studios
-As of right now, we cannot run any test code in Visual Studios as the ocamlgraph library is not loaded from the TopDirs module which is what is what loads in all standard libraries when you run ```ocaml``` in the terminal to start up an ocaml session. We will need to figure out how to do this if we want to test our code as we go. Otherwise, we will need to run test as mentioned in the next section.
+You can test parts of your code in visual studios by calling an ocaml session within the visual studio terminal using this command:
+    ```ocaml -I "_build/default/bin/.main.eobjs" -I "data"```
+    
+This command needs to be run at the root of the repository directory where the .ocamlinit file is located. The ocamlinit file tells the TopDir module to load the ocamlgraph library, the Str library, and all the compiled modules from the sources. The first -I tells ocamlinit where the cmo files are to be loaded in. The second -I is used so you can test the data files in the code simply by using having the string ```"data/file name.csv```.
+
+If new files are added to the bin directory, and dune build is run then you may need to update the .ocamlinit file with the new .cmo file.
+
+As mentioned before, you will need to have dune build the repository first before you can run any code in the terminal. This also means that if you edit any of the source code then you have to rerun the build command of dune and restart your ocaml session in the terminal.
 
 # To build and run code
 The dune files in each directory make it so you only have to run ```dune build bin/main.exe```. This should be run at the root of the repository. You will be hopefully be able to run ```dune runtest``` in the root of the directory in the future to run all the tests, but right now the test files cannot find the source files. This makes it give unbound module.
