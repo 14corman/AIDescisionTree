@@ -2,7 +2,7 @@ open DecisionTree ;;
 (*open Printf *);;
 
 (* Function to strip whitespace from the front and end of a string *)
-let strip_ws str = Str.replace_first (Str.regexp "\\s+$") "" (Str.replace_first (Str.regexp "^\\s+") "" str) ;;
+let strip_ws str = Str.replace_first (Str.regexp "[ \n\r\x0c\t]+$") "" (Str.replace_first (Str.regexp "^[ \n\r\x0c\t]+") "" str) ;;
 
 (* Equivalent to Map.update for newer OCaml versions, except this doesn't use an option type *)
 let update_map (func : 'a -> 'a) (key : string) (map : 'a DTree.Feature_map.t) =
@@ -59,10 +59,11 @@ let parse (file : string) =
 
         (* Add the values in the line to the feature maps *)
         let rec readlines feat_map labels val_map feat_domain =
+          let line = strip_ws (try input_line in_file with End_of_file -> "") in
+          if String.contains line '?' then readlines feat_map labels val_map feat_domain else
           match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
           | [] -> close_in in_file ; (feat_map, labels, val_map)
           | (_ :: []) -> close_in in_file ; (feat_map, labels, val_map)
-          | (_ :: ex_feats) when List.mem "?" ex_feats -> readlines feat_map labels val_map feat_domain
           | (ex_label :: ex_feats) -> (
               let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
               let class_domain =
