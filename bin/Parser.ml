@@ -1,5 +1,6 @@
 open DecisionTree ;;
-(*open Printf ;;*)
+(* open Printf ;; *)
+
 
 (* Function to strip whitespace from the front and end of a string *)
 let strip_ws str = Str.replace_first (Str.regexp "\\s+$") "" (Str.replace_first (Str.regexp "^\\s+") "" str) ;;
@@ -39,7 +40,7 @@ let rec add_feats (feature_map : int list DTree.Feature_map.t) (value_map : int 
   | _, _ -> failwith "Invalid input"
 ;;
 
-(* Parse the given csv into a list of Feature_map of the feature values,
+(* Parse the given csv into a list of DTree.Feature_map of the feature values,
      a list of the class labels, and a map from the feature names to the number of unique values *)
 let parse (file : string) =
   let in_file = open_in file in
@@ -48,12 +49,13 @@ let parse (file : string) =
     | [] -> failwith (Printf.sprintf "Empty header in %s" file)
     | (_ :: []) -> failwith (Printf.sprintf "Only one column found in %s" file)
     | (_ :: features) -> (
+        (* Initialize the maps *)
         let (feature_map,value_counts,feature_domain) = List.fold_right (fun feat (map1,map2,map3) ->
             (DTree.Feature_map.add feat [] map1,
              DTree.Feature_map.add feat 0 map2,
              DTree.Feature_map.add feat DTree.Feature_map.empty map3))
             features
-            (DTree.Feature_map.empty,DTree.Feature_map.empty,DTree.Feature_map.empty)
+            (DTree.Feature_map.empty,DTree.Feature_map.empty, DTree.Feature_map.empty |> DTree.Feature_map.add "class" DTree.Feature_map.empty)
         in
 
         (* Add the values in the line to the feature maps *)
@@ -61,14 +63,23 @@ let parse (file : string) =
           match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
           | [] -> close_in in_file ; (feat_map, labels, val_map)
           | (_ :: []) -> close_in in_file ; (feat_map, labels, val_map)
-          | (ex_label :: ex_feats) ->
+          | (ex_label :: ex_feats) -> (
             let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
-            readlines f_map ((int_of_string ex_label) :: labels) v_map f_domain
+            let class_domain =
+              (* See if there was a new class label in this example *)
+              let domain = DTree.Feature_map.find "class" f_domain in
+              if (DTree.Feature_map.mem ex_label domain) then
+                domain
+              else
+                DTree.Feature_map.add ex_label (map_len domain) domain
+            in
+            readlines f_map ((DTree.Feature_map.find ex_label class_domain) :: labels) v_map (DTree.Feature_map.add "class" class_domain f_domain)
+          )
         in
         readlines feature_map [] value_counts feature_domain
       )
   with e ->
-    close_in_noerr in_file;
+    close_in_noerr in_file ;
     raise e
 ;;
 
