@@ -1,0 +1,7 @@
+#use "topfind";;
+#require "ocamlgraph";;
+#require "Str";;
+
+#load "DecisionTree.cmo";;
+#load "Parser.cmo";;
+#load "TreeClassifier.cmo";;

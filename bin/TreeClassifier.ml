@@ -1,5 +1,4 @@
 open DecisionTree
-(*open Parser*)
 include DTree
 
 (* See if string 1 contains string 2. *)
