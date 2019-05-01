@@ -61,7 +61,7 @@ let parse (file : string) =
         let rec readlines feat_map labels val_map feat_domain =
           let line = strip_ws (try input_line in_file with End_of_file -> "") in
           if String.contains line '?' then readlines feat_map labels val_map feat_domain else
-          match Str.split (Str.regexp ",") (strip_ws (input_line in_file)) with
+          match Str.split (Str.regexp ",") line with
           | [] -> close_in in_file ; (feat_map, labels, val_map)
           | (_ :: []) -> close_in in_file ; (feat_map, labels, val_map)
           | (ex_label :: ex_feats) -> (
