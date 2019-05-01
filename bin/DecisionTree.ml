@@ -1,4 +1,4 @@
-open Graph
+open Graph;;
 
 module EDGE = struct
   type t = int
@@ -8,7 +8,7 @@ end
 
 module DTree = struct
   exception Var_attribute_mismatch
-  module G = Graph.Imperative.Digraph.AbstractLabeled(struct type t = string * string end)(EDGE)
+  module G = Imperative.Digraph.AbstractLabeled(struct type t = string * string end)(EDGE)
   module Display = struct
     include G
     (* https://b0-system.github.io/odig/doc/ocamlgraph/Graph/Graphviz/DotAttributes/index.html *)
@@ -21,14 +21,14 @@ module DTree = struct
     let edge_attributes e = [`Label (string_of_int (E.label e))]
     let get_subgraph _ = None
   end
-  module DotOutput = Graph.Graphviz.Dot(Display)
+  module DotOutput = Graphviz.Dot(Display)
   module B = Builder.I(G)
   module DotInput = 
     Dot.Parse
       (B)
       (struct 
         let get_label attr_list = List.fold_left (fun _ attr -> 
-            List.fold_left (fun a ((id: Graph.Dot_ast.id), (value: Graph.Dot_ast.id option)) -> 
+            List.fold_left (fun a ((id: Dot_ast.id), (value: Dot_ast.id option)) -> 
                 let id_string = match id with
                   | Dot_ast.Ident s
                   | Dot_ast.Number s
@@ -42,13 +42,13 @@ module DTree = struct
                   | Some (Dot_ast.Html s) -> s
                 else a) "" attr) "" attr_list
 
-        let node (id,_) (attr_list: Graph.Dot_ast.attr list) = match id with
+        let node (id,_) (attr_list: Dot_ast.attr list) = match id with
           | Dot_ast.Ident s
           | Dot_ast.Number s
           | Dot_ast.String s
           | Dot_ast.Html s -> (s, get_label attr_list)
 
-        let edge (attr_list: Graph.Dot_ast.attr list) = int_of_string (get_label attr_list)
+        let edge (attr_list: Dot_ast.attr list) = int_of_string (get_label attr_list)
       end)
   module Feature_map = Map.Make(String)
 
@@ -105,10 +105,10 @@ module DTree = struct
       let new_y = (List.fold_left2 (fun a var label -> if var = attr then label::a else a) [] vars labels) in Printf.printf "Results for attr: %i\n" (attr);
       let result = ((float_of_int (List.length new_y)) /. (float_of_int (List.length labels))) *. (entropy new_y) in Printf.printf "Remainder for attr: %f\n\n" (result);
       (*Printf.printf "result: %f\n\n" (result);*)
-      (remainder vars (attr - 1) labels) +. result;;
+      (remainder vars (attr - 1) labels) +. result
 
   (* Used for debugging so you can print out the values and labels lists.*)
-  let string_of_list vals = List.fold_left (fun a value -> a ^ "," ^ (string_of_int value)) "" vals;;
+  let string_of_list vals = List.fold_left (fun a value -> a ^ "," ^ (string_of_int value)) "" vals
 
   let string_of_string_map map = (Feature_map.fold (fun _ value string -> string ^ value ^ ",") map "[") ^ "]"
   let str_of_str_map_w_key map = (Feature_map.fold (fun key value string -> string ^ key ^ ":" ^ value ^ ",") map "[") ^ "]"
@@ -227,5 +227,5 @@ module DTree = struct
         end 
     in let dumby_vertex = G.V.create ("-1", "should not exist") in
     df_build x_map y attr_map dumby_vertex 0 1; G.remove_vertex g dumby_vertex; g
-end
+end;;
 

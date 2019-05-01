@@ -1,6 +1,5 @@
 open DecisionTree ;;
-(* open Printf ;; *)
-
+(*open Printf *);;
 
 (* Function to strip whitespace from the front and end of a string *)
 let strip_ws str = Str.replace_first (Str.regexp "\\s+$") "" (Str.replace_first (Str.regexp "^\\s+") "" str) ;;
