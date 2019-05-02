@@ -6,3 +6,4 @@
 #load "Parser.cmo";;
 #load "TreeClassifier.cmo";;
 #load "Metrics.cmo";;
+#load "CrossValidate.cmo";;

@@ -1,6 +1,7 @@
 open TreeClassifier;;
 open Parser;;
 open Metrics;;
+open CrossValidate;;
 
 (* command line *)
 let f_ = ref "dumby"
@@ -34,13 +35,10 @@ let () = Printf.printf "Working on dataset: %s\n" (name);;
 
 let find_max list = List.fold_left (fun a l -> if l > a then l else a) 0 list;;
 
-let (feature_map, labels, value_map) = parse f (*"data/breast-cancer.csv"*) ;;
-(* Do cross validation here...*)
-let g = build_tree feature_map labels value_map depth;;
+let (g, predictions, labels) = cross_validate 4 depth f;;
 let () = print_graph g;;
 let () = write_dot_to_file g output_file;;
 let max_label = find_max labels;;
-let predictions = classify_examples g feature_map;;
 let f1 = f1_score [predictions] [labels] max_label;;
-let () = print_confusion_matrix predictions labels max_label;;
+let () = print_confusion_matrices predictions labels max_label;;
 let () = Printf.printf "\nF1 score: %f\n" (f1);;

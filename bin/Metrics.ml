@@ -27,6 +27,9 @@ let rec print_confusion_matrix pred labels attr =
     Printf.printf "False | %f | %f\n\n" (fp) (fn);
     print_confusion_matrix pred labels  (attr - 1)
 
+let print_confusion_matrices pred labels attr = 
+  List.fold_left2 (fun a p l -> Printf.printf "\nPrinting confusion matrix for partition %i" (a); print_confusion_matrix p l attr; a + 1) 0 pred labels
+
 (* Calculate the accuracy for all of cross validation. Pred and labels are lists of cross validation labels and predictions. *)
 let accuracy pred labels attr = 
   let (tp, fp, fn, tn) = micro_sum pred labels attr in

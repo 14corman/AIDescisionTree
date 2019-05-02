@@ -4,18 +4,18 @@ digraph G {
   2 [label=<synfuels-corporation-cutback<br/>remainder: 0.168542315785<br/>Samples:[6,107,]>,
      shape=box, style="rounded,filled", ];
   3 [label=<1<br/>Samples:[6,17,]>, shape=box, style="rounded,filled", ];
-  6 [label=<1<br/>Samples:[90,]>, shape=box, style="rounded,filled", ];
-  7 [label=<adoption-of-the-budget-resolution<br/>remainder: 0.0453499249233<br/>Samples:[118,1,]>,
+  4 [label=<1<br/>Samples:[90,]>, shape=box, style="rounded,filled", ];
+  5 [label=<adoption-of-the-budget-resolution<br/>remainder: 0.0453499249233<br/>Samples:[118,1,]>,
      shape=box, style="rounded,filled", ];
-  8 [label=<0<br/>Samples:[11,]>, shape=box, style="rounded,filled", ];
-  11 [label=<0<br/>Samples:[103,]>, shape=box, style="rounded,filled", ];
+  6 [label=<0<br/>Samples:[15,1,]>, shape=box, style="rounded,filled", ];
+  7 [label=<0<br/>Samples:[103,]>, shape=box, style="rounded,filled", ];
   
   
   1 -> 2 [label="1", ];
-  1 -> 7 [label="0", ];
+  1 -> 5 [label="0", ];
   2 -> 3 [label="1", ];
-  2 -> 6 [label="0", ];
-  7 -> 8 [label="1", ];
-  7 -> 11 [label="0", ];
+  2 -> 4 [label="0", ];
+  5 -> 6 [label="1", ];
+  5 -> 7 [label="0", ];
   
   }

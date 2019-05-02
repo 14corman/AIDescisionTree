@@ -157,7 +157,7 @@ module DTree = struct
 
     (* Build the tree in a depth first traversal.*)
     let rec df_build x y attrs parent parent_attr depth max_depth =
-      Printf.printf "Depth: %i    Max_depth: %i\n" (depth) (max_depth);
+      (*Printf.printf "Depth: %i    Max_depth: %i\n" (depth) (max_depth);*)
       let classes = List.sort_uniq (fun x y -> if x > y then 1 else if x = y then -1 else 0) y in
       if (List.length classes) <= 0 then
         failwith "Cannot do anything with no features"
