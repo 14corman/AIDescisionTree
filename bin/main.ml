@@ -1,6 +1,8 @@
 open TreeClassifier;;
 open Parser;;
 open Metrics;;
+(* open CrossValidate ;; *)
+
 
 let (feature_map, labels, value_map) = parse "data/house-votes-84.csv" ;;(*Sys.argv.(1) *);;
 (* f1 = cross_validation feature_map labels value_map*);;
