@@ -1,5 +1,7 @@
 open DecisionTree ;;
-open Parser
+open TreeClassifier ;;
+open Parser ;;
+(* open Printf ;; *)
 
 (* Shuffle a list using the input seed.
    The same seed will shuffle lists of equal length the same way
@@ -21,11 +23,11 @@ let fisher_yates (seed : int) (hat : 'a list) =
   (* One at a time, take a random item out of takeFrom and add it to prependTo *)
   let rec helper takeFrom prependTo length =
     match takeFrom with
-    | (x :: y :: xs) -> (
+    | (_ :: _ :: _) -> (
       let (removed, bucket) = getNth takeFrom (Random.int length) in
       helper bucket (removed :: prependTo) (length - 1)
     )
-    | a -> takeFrom @ prependTo
+    | _ -> takeFrom @ prependTo
   in
     (* Initialize with the given seed *)
     Random.init seed ;
@@ -36,9 +38,9 @@ let fisher_yates (seed : int) (hat : 'a list) =
 
    Returns (head, tail)
 *)
-let rec split_list indx l =
+let split_list indx l =
   let curIndx = ref ~-1 in
-  List.partition (fun el -> curIndx := !curIndx + 1 ; !curIndx < indx ) l
+  List.partition (fun _ -> curIndx := !curIndx + 1 ; !curIndx < indx ) l
 
 (* Partition a list into k lists
 
@@ -67,14 +69,40 @@ let shuffle_and_partition (k : int) (feature_map : int list DTree.Feature_map.t)
   (partition_map k feat_map, partition k labs [])
 ;;
 
-(*
-let cross_validate (k : int) (d : depth) (data_file : string) =
+let rec combine_list_partitions l (exclude : int) =
+  match l with
+  | [] -> ([],[])
+  | (part :: parts) -> (
+    if exclude = 0 then
+      (part, List.concat parts)
+    else
+      let (excluded, combined) = combine_list_partitions parts (exclude-1) in
+      (excluded, List.append part combined)
+  )
+;;
+
+let combine_map_partitions m (exclude : int) =
+  DTree.Feature_map.fold (fun f ps (ex, com) ->
+                            let (excluded, combined) = combine_list_partitions ps exclude in
+                            (DTree.Feature_map.add f excluded ex, DTree.Feature_map.add f combined com))
+                         m (DTree.Feature_map.empty, DTree.Feature_map.empty)
+;;
+
+(* Problem -- num_feature_values isn't guaranteed to be correct for a given partitioning *)
+
+
+let cross_validate (k : int) (d : int) (data_file : string) =
   let (feature_map, labels, num_feature_values) = parse data_file in
-  let features = DTree.Feature_map.fold (fun feat l so_far -> feat :: so_far) feature_map [] in
+  let _ = DTree.Feature_map.fold (fun feat _ so_far -> feat :: so_far) feature_map [] in  (* first _ => features *)
   if List.length labels < k then
     failwith "The number of folds should not exceed the number of examples"
   else
-    let partitions = shuffle_and_partition k feature_map labels in
-    parititions
+    let (partitioned_map, partitioned_labels) = shuffle_and_partition k feature_map labels in
+    let partition = ref 0 in
+    let (_, combined_feats) = combine_map_partitions partitioned_map (!partition) in  (* _ => excluded_feats *)
+    let (_, combined_labels) = combine_list_partitions partitioned_labels (!partition) in  (* _ => excluded_labels *)
+    let g = build_tree combined_feats combined_labels num_feature_values (Some d) in
+    print_graph g ;
+    partitioned_map
 ;;
-*)
+
