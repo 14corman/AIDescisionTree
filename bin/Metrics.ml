@@ -1,3 +1,6 @@
+(* Creates a list with the range of integers [low, high) *)
+let rec range low high = if low >= high then [] else low :: (range (low+1) high) ;;
+
 (* Methods to calculate parts for f1, accuracy, and confusion matrix.*)
 let false_positive pred labels attr = List.fold_left2 (fun a p l -> if attr = l && l != p then a +. 1.0 else a) 0.0 pred labels
 let true_positive pred labels attr  = List.fold_left2 (fun a p l -> if attr = l && l = p then a +. 1.0 else a) 0.0 pred labels
@@ -26,11 +29,13 @@ let rec print_confusion_matrix pred labels attr =
     Printf.printf "-------------------\n";
     Printf.printf "False | %f | %f\n\n" (fp) (fn);
     print_confusion_matrix pred labels  (attr - 1)
+;;
 
 (* Calculate the accuracy for all of cross validation. Pred and labels are lists of cross validation labels and predictions. *)
 let accuracy pred labels attr = 
   let (tp, fp, fn, tn) = micro_sum pred labels attr in
   (tp +. fp) /. (tn +. tp +. fp +. fn)
+;;
 
 (* Calculate the micro-average F1 score. Pred and labels are lists of cross validation labels and predictions.*)
 let f1_score pred labels attr =
@@ -42,3 +47,4 @@ let f1_score pred labels attr =
   (*Printf.printf "Precision: %f\n" (p);
     Printf.printf "Recall: %f\n" (r);*)
   2.0 *. (p *. r) /. (p +. r)
+;;
