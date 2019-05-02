@@ -14,25 +14,25 @@ let fisher_yates (seed : int) (hat : 'a list) =
     | [] -> failwith "List index out of bounds"
     | (x :: []) -> if n = 0 then (x, []) else failwith "List index out of bounds"
     | (x :: xs) -> (
-      if n = 0 then
-        (x, xs)
-      else
-        let (removed, bucket) = getNth xs (n - 1) in
-        (removed, x :: bucket)
-    )
+        if n = 0 then
+          (x, xs)
+        else
+          let (removed, bucket) = getNth xs (n - 1) in
+          (removed, x :: bucket)
+      )
   in
   (* One at a time, take a random item out of takeFrom and add it to prependTo *)
   let rec helper takeFrom prependTo length =
     match takeFrom with
     | (_ :: _ :: _) -> (
-      let (removed, bucket) = getNth takeFrom (Random.int length) in
-      helper bucket (removed :: prependTo) (length - 1)
-    )
+        let (removed, bucket) = getNth takeFrom (Random.int length) in
+        helper bucket (removed :: prependTo) (length - 1)
+      )
     | _ -> takeFrom @ prependTo
   in
-    (* Initialize with the given seed *)
-    Random.init seed ;
-    helper hat [] (List.length hat)
+  (* Initialize with the given seed *)
+  Random.init seed ;
+  helper hat [] (List.length hat)
 ;;
 
 (* Split a list at the given index
@@ -76,21 +76,21 @@ let rec combine_list_partitions l (exclude : int) =
   match l with
   | [] -> ([],[])
   | (part :: parts) -> (
-    if exclude = 0 then
-      (part, List.concat parts)
-    else
-      let (excluded, combined) = combine_list_partitions parts (exclude-1) in
-      (excluded, List.append part combined)
-  )
+      if exclude = 0 then
+        (part, List.concat parts)
+      else
+        let (excluded, combined) = combine_list_partitions parts (exclude-1) in
+        (excluded, List.append part combined)
+    )
 ;;
 
 (* Returns two maps. One's values are the excluded lists from combine_line_partitions.
    The other's values are the combined lists from combine_list_partitions. *)
 let combine_map_partitions m (exclude : int) =
   DTree.Feature_map.fold (fun f ps (ex, com) ->
-                            let (excluded, combined) = combine_list_partitions ps exclude in
-                            (DTree.Feature_map.add f excluded ex, DTree.Feature_map.add f combined com))
-                         m (DTree.Feature_map.empty, DTree.Feature_map.empty)
+      let (excluded, combined) = combine_list_partitions ps exclude in
+      (DTree.Feature_map.add f excluded ex, DTree.Feature_map.add f combined com))
+    m (DTree.Feature_map.empty, DTree.Feature_map.empty)
 ;;
 
 (* Builds a tree using all but the partitioneth list in the partitioned dataset. 
@@ -99,9 +99,10 @@ let run_partition partitioned_map partitioned_labels feat_val_counts depth parti
   let (excluded_examples, combined_examples) = combine_map_partitions partitioned_map partition in
   let (excluded_labels, combined_labels) = combine_list_partitions partitioned_labels partition in
   let g = build_tree combined_examples combined_labels feat_val_counts depth in
+  (*print_graph g;*)
   let predictions = classify_examples g excluded_examples in
   (* Printf.printf "pred: [" ; List.iter (Printf.printf "%d; ") predictions ; Printf.printf "]\n" ;
-  Printf.printf "act:  [" ; List.iter (Printf.printf "%d; ") excluded_labels ; Printf.printf "]\n\n" ; *)
+     Printf.printf "act:  [" ; List.iter (Printf.printf "%d; ") excluded_labels ; Printf.printf "]\n\n" ; *)
   predictions, excluded_labels
 ;;
 
@@ -119,11 +120,11 @@ let cross_validate (k : int) (d : int option) (data_file : string) =
   else
     let (partitioned_map, partitioned_labels) = shuffle_and_partition k feature_map labels in
     let (predicted, actual) = List.fold_left (fun (pred, act) part ->
-                                                    let (p, a) = run_partition partitioned_map partitioned_labels num_feature_values d part in
-                                                    (p :: pred, a :: act))
-                                ([],[])
-                                (range 0 k)
+        let (p, a) = run_partition partitioned_map partitioned_labels num_feature_values d part in
+        (p :: pred, a :: act))
+        ([],[])
+        (range 0 k)
     in
-    let g = build_tree feature_map labels num_feature_values in
+    let g = build_tree feature_map labels num_feature_values d in
     (g, predicted, actual)
 ;;

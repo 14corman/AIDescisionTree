@@ -60,8 +60,6 @@ module DTree = struct
   (* Will take the file name of a precomputed graph dot file and parse it to build a graph that will be returned. *)
   let parse_dot_file file_name = DotInput.parse file_name
 
-  let g = G.create ()
-
   (* The number of vertices in the graph. Will be used to make vertex ids later.*)
   let size = ref 0
 
@@ -134,6 +132,8 @@ module DTree = struct
      attr_map = "feature name 1": number of attributes (boolean = 1 for 0 and 1, 2 would be for feature with 3 attributes)
                "feature name 2": number of attributes*)
   let build_tree x_map y attr_map depth =
+    size := 0;
+    let g = G.create () in
     (*let num_classes = List.sort_uniq (fun x y -> if x > y then 1 else if x = y then -1 else 0) y in*)
 
     (* partiion_x and partition_y return the new x or y where every example that lines up with the winning feature and attribute is returned.*)
@@ -156,7 +156,7 @@ module DTree = struct
                          Feature_map.add (string_of_int label) 1 map) Feature_map.empty list in
 
     (* Build the tree in a depth first traversal.*)
-    let rec df_build x y attrs parent parent_attr depth max_depth =
+    let rec df_build g x y attrs parent parent_attr depth max_depth =
       (*Printf.printf "Depth: %i    Max_depth: %i\n" (depth) (max_depth);*)
       let classes = List.sort_uniq (fun x y -> if x > y then 1 else if x = y then -1 else 0) y in
       if (List.length classes) <= 0 then
@@ -224,7 +224,7 @@ module DTree = struct
                               G.add_edge_e g leaf_edge
                             end 
                           else 
-                            df_build (partition_x a winning_var_list remove_winner) new_y new_attrs v a (depth + 1) max_depth) attr_list;
+                            df_build g (partition_x a winning_var_list remove_winner) new_y new_attrs v a (depth + 1) max_depth) attr_list;
               if fst (G.V.label parent) != "-1" then
                 begin
                   let successors = G.succ g v in
@@ -249,7 +249,7 @@ module DTree = struct
     in 
     let dumby_vertex = G.V.create ("-1", "should not exist") in
     match depth with
-    | None -> df_build x_map y attr_map dumby_vertex 0 1 max_int; G.remove_vertex g dumby_vertex; g
-    | Some md -> df_build x_map y attr_map dumby_vertex 0 1 md; G.remove_vertex g dumby_vertex; g
+    | None -> df_build g x_map y attr_map dumby_vertex 0 1 max_int; G.remove_vertex g dumby_vertex; g
+    | Some md -> df_build g x_map y attr_map dumby_vertex 0 1 md; G.remove_vertex g dumby_vertex; g
 end;;
 
