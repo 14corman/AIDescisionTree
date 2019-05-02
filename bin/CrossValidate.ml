@@ -1,28 +1,35 @@
 open DecisionTree ;;
 open Parser
 
-(* module Feature_map = Map.Make(String) ;; *)
-(* let g = TreeClassifier.build_tree feat_map labels domain *)
-
-(* Takes a list of the names of features, the Feature_map containing the dataset, and
-     a list of the examples' class labels
-
-   Returns a Feature_map containing the same input examples, but the values are all shuffled
-     in the same way, a list of the examples' labels shuffled the same was as the Feature_map vals
+(* Shuffle a list using the input seed.
+   The same seed will shuffle lists of equal length the same way
 *)
-let rec shuffle features (feature_map : int list DTree.Feature_map.t) (labels : int list) =
-  let rec shuffler k feature_m labels =
-    if k < 1 then
-      (feature_m, labels)
-    else
-      (* A list of bools, true if the element at that index goes into the left partition, false otherwise *)
-      let parts = List.fold_right (fun _ acc -> Random.bool() :: acc) labels [] in
-      (* A feature map with all of the values shuffled according to parts *)
-      let feat_map = DTree.Feature_map.map (fun val_list -> let (tail, head) = List.fold_right2 (fun v b (h, t) -> if b then (v :: h, t) else (h, v :: t)) val_list parts ([],[]) in
-                                             List.rev_append head tail) feature_m in
-      shuffler (k-1) feat_map (let (tail, head) = List.fold_right2 (fun v b (h, t) -> if b then (v :: h, t) else (h, v :: t)) labels parts ([],[]) in List.rev_append head tail)
+let fisher_yates (seed : int) (hat : 'a list) =
+  (* Remove the nth element from takeFrom and return the remainder *)
+  let rec getNth takeFrom n =
+    match takeFrom with
+    | [] -> failwith "List index out of bounds"
+    | (x :: []) -> if n = 0 then (x, []) else failwith "List index out of bounds"
+    | (x :: xs) -> (
+      if n = 0 then
+        (x, xs)
+      else
+        let (removed, bucket) = getNth xs (n - 1) in
+        (removed, x :: bucket)
+    )
   in
-  shuffler 10 feature_map labels 
+  (* One at a time, take a random item out of takeFrom and add it to prependTo *)
+  let rec helper takeFrom prependTo length =
+    match takeFrom with
+    | (x :: y :: xs) -> (
+      let (removed, bucket) = getNth takeFrom (Random.int length) in
+      helper bucket (removed :: prependTo) (length - 1)
+    )
+    | a -> takeFrom @ prependTo
+  in
+    (* Initialize with the given seed *)
+    Random.init seed ;
+    helper hat [] (List.length hat)
 ;;
 
 (* Split a list at the given index
@@ -51,8 +58,12 @@ let partition_map (k : int) (feature_map : int list DTree.Feature_map.t) =
 ;;
 
 
-let shuffle_and_partition (k : int) (features : string list) (feature_map : int list DTree.Feature_map.t) (labels : int list) = 
-  let (feat_map, labs) = shuffle features feature_map labels in
+let shuffle_and_partition (k : int) (feature_map : int list DTree.Feature_map.t) (labels : int list) =
+  Random.self_init () ;
+  let seed = Random.bits () in
+  let feat_map = DTree.Feature_map.map (fisher_yates seed) feature_map in
+  let labs = fisher_yates seed labels in
+  (* let (feat_map, labs) = shuffle features feature_map labels in *)
   (partition_map k feat_map, partition k labs [])
 ;;
 
@@ -63,6 +74,7 @@ let cross_validate (k : int) (d : depth) (data_file : string) =
   if List.length labels < k then
     failwith "The number of folds should not exceed the number of examples"
   else
-    let partitions = shuffle_and_partition k features feature_map labels in
+    let partitions = shuffle_and_partition k feature_map labels in
     parititions
-;; *)
+;;
+*)
