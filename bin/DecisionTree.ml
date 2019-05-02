@@ -53,8 +53,7 @@ module DTree = struct
   module Feature_map = Map.Make(String)
 
   (* Will write the graph out to a dot file with the given name. *)
-  let write_dot_to_file file_name = 
-    let graph = G.create () in
+  let write_dot_to_file graph file_name = 
     let file = open_out_bin file_name in
     DotOutput.output_graph file graph
 
@@ -158,7 +157,7 @@ module DTree = struct
 
     (* Build the tree in a depth first traversal.*)
     let rec df_build x y attrs parent parent_attr depth max_depth =
-      (*Printf.printf "Depth: %i\n" (depth);*)
+      Printf.printf "Depth: %i    Max_depth: %i\n" (depth) (max_depth);
       let classes = List.sort_uniq (fun x y -> if x > y then 1 else if x = y then -1 else 0) y in
       if (List.length classes) <= 0 then
         failwith "Cannot do anything with no features"
@@ -201,12 +200,25 @@ module DTree = struct
                               Printf.printf "Entropy check with old y: %f\n" (entropy_old_y);*)
                             (*Printf.printf "old y check: [%s]\n" (string_of_list y);*)
                             (*Printf.printf "New y: [%s]\n" (string_of_list new_y);*)
+
                             (* Leaf node because partition will have no labels to look at or distributions between parent and child will be the same.*)
                           if List.length new_y <= 0 || entropy_y = (snd winner) then 
                             begin
                               size := !size + 1; 
                               let majority = mode y in
                               let leaf = G.V.create (string_of_int !size, string_of_int (List.hd majority) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples y))) in 
+                              G.add_vertex g leaf;
+                              let leaf_edge = G.E.create v a leaf in
+                              G.add_edge_e g leaf_edge
+                            end 
+                          else
+
+                            (* The depth of the node is at the max alloweable depth, so it is forced to be a leaf.*)
+                          if depth + 1 = max_depth then 
+                            begin
+                              size := !size + 1; 
+                              let majority = mode new_y in
+                              let leaf = G.V.create (string_of_int !size, string_of_int (List.hd majority) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples new_y))) in 
                               G.add_vertex g leaf;
                               let leaf_edge = G.E.create v a leaf in
                               G.add_edge_e g leaf_edge
