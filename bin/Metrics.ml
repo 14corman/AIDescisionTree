@@ -20,7 +20,7 @@ let rec print_confusion_matrix pred labels attr =
     let fp = false_positive pred labels attr in
     let fn = false_negative pred labels attr in
     let tn = true_negative pred labels attr in
-    Printf.printf "Matrix for attr: %i\n" (attr);
+    Printf.printf "\nMatrix for attr: %i\n" (attr);
     Printf.printf "        Positive | Negative \n";
     Printf.printf "True  | %f | %f\n" (tp) (tn);
     Printf.printf "-------------------\n";
