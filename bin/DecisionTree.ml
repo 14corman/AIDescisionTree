@@ -201,13 +201,24 @@ module DTree = struct
                             (*Printf.printf "old y check: [%s]\n" (string_of_list y);*)
                             (*Printf.printf "New y: [%s]\n" (string_of_list new_y);*)
 
-                            (* Leaf node because partition will have no labels to look at ,or distributions between parent and child will be the same, or
-                               the depth of the node is at the max alloweable depth.*)
-                          if List.length new_y <= 0 || entropy_y = (snd winner) || depth = max_depth then 
+                            (* Leaf node because partition will have no labels to look at or distributions between parent and child will be the same.*)
+                          if List.length new_y <= 0 || entropy_y = (snd winner) then 
                             begin
                               size := !size + 1; 
                               let majority = mode y in
                               let leaf = G.V.create (string_of_int !size, string_of_int (List.hd majority) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples y))) in 
+                              G.add_vertex g leaf;
+                              let leaf_edge = G.E.create v a leaf in
+                              G.add_edge_e g leaf_edge
+                            end 
+                          else
+
+                            (* The depth of the node is at the max alloweable depth, so it is forced to be a leaf.*)
+                          if depth + 1 = max_depth then 
+                            begin
+                              size := !size + 1; 
+                              let majority = mode new_y in
+                              let leaf = G.V.create (string_of_int !size, string_of_int (List.hd majority) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples new_y))) in 
                               G.add_vertex g leaf;
                               let leaf_edge = G.E.create v a leaf in
                               G.add_edge_e g leaf_edge
@@ -219,7 +230,7 @@ module DTree = struct
                   let successors = G.succ g v in
                   let successors_uniq = List.sort_uniq (fun x y -> Pervasives.compare x y) (List.fold_left (fun a vertex -> (snd (G.V.label vertex))::a) [] successors) in
                   (* This node only has leaf nodes as children, and all those leaf nodes have the same value. *)
-                  if List.length successors_uniq = 1 || depth = max_depth then
+                  if List.length successors_uniq = 1 then
                     begin
                       let old_size = fst (G.V.label v) in
                       G.remove_vertex g v;
