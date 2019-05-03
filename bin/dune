@@ -1,6 +1,6 @@
-(executables
-(names BuildDTree BuildDTreeDepth Classifier)
-;(executable
-; (name main)
+;(executables
+;(names BuildDTree BuildDTreeDepth Classifier)
+(executable
+ (name main)
  (libraries ocamlgraph Str)
 )

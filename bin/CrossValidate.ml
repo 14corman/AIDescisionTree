@@ -101,11 +101,11 @@ let run_partition partitioned_map partitioned_labels feat_val_counts depth parti
   let g = build_tree combined_examples combined_labels feat_val_counts depth in
   (*print_graph g;*)
   let predictions = classify_examples g excluded_examples in
-  let incorrect = List.fold_left2 (fun err pred act -> if pred = act then err else err + 1)
+  let training_incorrect = List.fold_left2 (fun err pred act -> if pred = act then err else err + 1)
                                   0 (classify_examples g combined_examples) combined_labels in
   (* Printf.printf "pred: [" ; List.iter (Printf.printf "%d; ") predictions ; Printf.printf "]\n" ;
      Printf.printf "act:  [" ; List.iter (Printf.printf "%d; ") excluded_labels ; Printf.printf "]\n\n" ; *)
-  predictions, excluded_labels, (float_of_int incorrect) /. (float_of_int (List.length combined_labels))
+  predictions, excluded_labels, (float_of_int training_incorrect) /. (float_of_int (List.length combined_labels))
 ;;
 
 
@@ -140,24 +140,42 @@ let cross_validate (k : int) (d : int option) (data_file : string) =
   cross_validator k d (parse data_file)
 ;;
 
-(*
-(* k set to 4 *)
-let select_model (data_file : string) (low : int option) (high : int option) =
-  let ds = parse data_file in
+
+(* k set to 4 per project description *)
+(* low is the smallest depth that will be considered (None => 0).
+   high is the highest depth that will be considered (None => TBD).
+  
+   Compile a list of training errors and validation accuracies to
+   determine the best depth for the dataset. *)
+let select_model (low : int option) (high : int option) (data_file : string) =
+  let (feat_map, labels, value_map) = parse data_file in
   let min_depth =
     match low with
-    | None -> 0
+    | None   -> 0                 (* Equivalent to ZeroR *)
     | Some c -> c
   in
-  let max_depth =
-    match high with
-    | None -> No
-  in
+  let training_errs = ref [] in
 
-  List.fold_left (fun d ->
-    let (predicted, actual, t_err) = cross_validator 4 d ds in
+  (* Gather (depth, validation error) until the max_depth is reached or the training error converges. *)
+  let validation_errs = match high with
+  | None           -> []     (* Something needs done here to find training error convergence *)
+  | Some max_depth -> (
+    List.fold_left (fun acc d ->
+      let (_, predicted, actual, t_err) = cross_validator 4 (Some d) (feat_map, labels, value_map) in
+      training_errs := t_err :: !training_errs ;
+      (d, 1.0 -. (accuracy predicted actual 1)) :: acc
+    )
+    []
+    (* range is exclusive on the upper limit *)
+    (range min_depth (max_depth + 1))
   )
-  ([],[])
-  (range 1 11)
-  None
-;; *)
+  in
+  (* The first element in training_errs is for the greatest depth.
+     Starting from the lowest depth, check for a stall in the decrease in training error.
+     When that happens, ignore the rest of the front of the list.
+     From the corresponding elements of validation_errs, return d from the element
+       (d, err) where err is the minimum value found. *)
+  Printf.printf "training errs: [" ; List.iter (Printf.printf "%f; ") !training_errs ; Printf.printf "]\n" ;
+  Printf.printf "validate errs: [" ; List.iter (fun (_, err) -> Printf.printf "%f; " err) validation_errs ; Printf.printf "]\n"
+;;
+

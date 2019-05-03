@@ -38,7 +38,7 @@ let print_confusion_matrices pred labels attr =
 (* Calculate the accuracy for all of cross validation. Pred and labels are lists of cross validation labels and predictions. *)
 let accuracy pred labels attr = 
   let (tp, fp, fn, tn) = micro_sum pred labels attr in
-  (tp +. fp) /. (tn +. tp +. fp +. fn)
+  (tp +. tn) /. (tn +. tp +. fp +. fn)
 ;;
 
 (* Calculate the micro-average F1 score. Pred and labels are lists of cross validation labels and predictions.*)
