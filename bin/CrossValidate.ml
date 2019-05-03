@@ -101,9 +101,11 @@ let run_partition partitioned_map partitioned_labels feat_val_counts depth parti
   let g = build_tree combined_examples combined_labels feat_val_counts depth in
   (*print_graph g;*)
   let predictions = classify_examples g excluded_examples in
+  let incorrect = List.fold_left2 (fun err pred act -> if pred = act then err else err + 1)
+                                  0 (classify_examples g combined_examples) combined_labels in
   (* Printf.printf "pred: [" ; List.iter (Printf.printf "%d; ") predictions ; Printf.printf "]\n" ;
      Printf.printf "act:  [" ; List.iter (Printf.printf "%d; ") excluded_labels ; Printf.printf "]\n\n" ; *)
-  predictions, excluded_labels
+  predictions, excluded_labels, (float_of_int incorrect) /. (float_of_int (List.length combined_labels))
 ;;
 
 
@@ -111,20 +113,51 @@ let run_partition partitioned_map partitioned_labels feat_val_counts depth parti
 (* Problem -- num_feature_values isn't guaranteed to be correct for a given partitioning *)
 
 (* Returns a graph covering all of the examples, a list of lists of predicted labels,
-     and a list of lists of actual labels *)
-let cross_validate (k : int) (d : int option) (data_file : string) =
-  let (feature_map, labels, num_feature_values) = parse data_file in
-  let _ = DTree.Feature_map.fold (fun feat _ so_far -> feat :: so_far) feature_map [] in  (* first _ => features *)
+     a list of lists of actual labels, and the training error for this partition *)
+let cross_validator (k : int) (d : int option) (feature_map,labels,num_feature_values) =
+  (* let _ = DTree.Feature_map.fold (fun feat _ so_far -> feat :: so_far) feature_map [] in  (* first _ => features *) *)
   if List.length labels < k then
     failwith "The number of folds should not exceed the number of examples"
   else
     let (partitioned_map, partitioned_labels) = shuffle_and_partition k feature_map labels in
-    let (predicted, actual) = List.fold_left (fun (pred, act) part ->
-        let (p, a) = run_partition partitioned_map partitioned_labels num_feature_values d part in
-        (p :: pred, a :: act))
-        ([],[])
+
+    (* Gather the predicted labels for each partition, the actual labels, and the sum of the training errors *)
+    let (predicted, actual, t_err) = List.fold_left (fun (pred, act, err) part ->
+        let (p, a, tr_err) = run_partition partitioned_map partitioned_labels num_feature_values d part in
+        (p :: pred, a :: act, tr_err +. err))
+        ([],[],0.0)
         (range 0 k)
     in
+
     let g = build_tree feature_map labels num_feature_values d in
-    (g, predicted, actual)
+    (g, predicted, actual, t_err /. (float_of_int k))
 ;;
+
+(* Returns the decision tree for the entire dataset,
+   a list of lists of predicted class labels, a list of lists of class labels,
+   and the average training error. *)
+let cross_validate (k : int) (d : int option) (data_file : string) =
+  cross_validator k d (parse data_file)
+;;
+
+(*
+(* k set to 4 *)
+let select_model (data_file : string) (low : int option) (high : int option) =
+  let ds = parse data_file in
+  let min_depth =
+    match low with
+    | None -> 0
+    | Some c -> c
+  in
+  let max_depth =
+    match high with
+    | None -> No
+  in
+
+  List.fold_left (fun d ->
+    let (predicted, actual, t_err) = cross_validator 4 d ds in
+  )
+  ([],[])
+  (range 1 11)
+  None
+;; *)
