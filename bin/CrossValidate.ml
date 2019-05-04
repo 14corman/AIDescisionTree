@@ -165,6 +165,7 @@ let select_model (low : int option) (high : int option) (data_file : string) =
   let rec get_errors d max_depth last_err =
     let (_, predicted, actual, t_err) = cross_validator 4 (Some d) (feat_map, labels, value_map) in
     let val_error = 1.0 -. (accuracy predicted actual (find_max actual)) in
+    (* if val_error -. t_err > epsilon || d >= max_depth then ([t_err], [(d, val_error)]) else *)
     if Float.abs (last_err -. t_err) < epsilon || d >= max_depth then ([t_err], [(d, val_error)]) else
       let (training_error2, validation_error2) = get_errors (d + 1) max_depth t_err in
       (t_err :: training_error2,
@@ -183,8 +184,8 @@ let select_model (low : int option) (high : int option) (data_file : string) =
   Printf.printf "training errs: [" ; List.iter (Printf.printf "%f; ") training_errs ; Printf.printf "]\n" ;
   Printf.printf "validate errs: [" ; List.iter (fun (d, err) -> Printf.printf "(%d, %f); " d err) validation_errs ; Printf.printf "]\n";
   let winning_depth = fst (find_min_error validation_errs) in
-  Printf.printf "winning depth: %i" winning_depth;
-  (* cross_validator 4 (Some winning_depth) (feat_map, labels, value_map) *)
+  Printf.printf "winning depth: %i\n" winning_depth;
+  cross_validator 4 (Some winning_depth) (feat_map, labels, value_map)
 ;;
 
 
