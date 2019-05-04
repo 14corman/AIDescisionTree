@@ -173,7 +173,7 @@ let select_model (low : int option) (high : int option) (data_file : string) =
 
   (* Gather (depth, validation error) until the max_depth is reached or the training error converges. *)
   let (training_errs, validation_errs) = match high with
-    | None           -> get_errors min_depth (List.length labels) 0.0
+    | None           -> get_errors min_depth (List.length (Feature_map.bindings feat_map)) 0.0
     | Some max_depth -> get_errors min_depth max_depth 0.0
   in
   (* The first element in training_errs is for the greatest depth.

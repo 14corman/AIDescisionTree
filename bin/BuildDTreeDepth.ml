@@ -23,9 +23,7 @@ let dir = match !dir_ with
   | None -> "" 
   | Some d -> d ^ "/"
 
-let depth = match !d_ with
-  | None -> failwith "Max depth of tree not given"
-  | Some d -> Some d
+let depth = !d_
 
 let name = !f_
 let f = dir ^ !f_ ^ ".csv"
