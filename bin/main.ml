@@ -1,9 +1,9 @@
 open CrossValidate ;;
 (* open Parser ;;
-open TreeClassifier ;; *)
+   open TreeClassifier ;; *);;
 
 (*let (_,_,_,err) = cross_validate 10 None "data/breast-cancer.csv" ;;
-Printf.printf "%f\n" err ;;"data/house-votes-84.csv"*)
+  Printf.printf "%f\n" err ;;"data/house-votes-84.csv"*);;
 let () = select_model (Some 1) (Some 10) "data/house-votes-84.csv" ;;
 
 (*

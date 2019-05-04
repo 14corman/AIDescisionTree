@@ -171,6 +171,15 @@ module DTree = struct
               let e = G.E.create parent parent_attr v in
               G.add_edge_e g e
             end 
+          else if depth + 1 = max_depth then 
+            begin
+              size := !size + 1; 
+              let majority = mode y in
+              let leaf = G.V.create (string_of_int !size, string_of_int (List.hd majority) ^ "<br/>Samples:" ^ (string_of_int_map (compute_num_samples y))) in 
+              G.add_vertex g leaf;
+              let leaf_edge = G.E.create parent parent_attr leaf in
+              G.add_edge_e g leaf_edge
+            end 
           else
             begin
               let winner = choose_var x y attrs in
@@ -249,7 +258,7 @@ module DTree = struct
     in 
     let dumby_vertex = G.V.create ("-1", "should not exist") in
     match depth with
-    | None -> df_build g x_map y attr_map dumby_vertex 0 1 max_int; G.remove_vertex g dumby_vertex; g
-    | Some md -> df_build g x_map y attr_map dumby_vertex 0 1 md; G.remove_vertex g dumby_vertex; g
+    | None -> df_build g x_map y attr_map dumby_vertex 0 ~-1 max_int; G.remove_vertex g dumby_vertex; g
+    | Some md -> df_build g x_map y attr_map dumby_vertex 0 ~-1 md; G.remove_vertex g dumby_vertex; g
 end;;
 

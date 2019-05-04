@@ -34,7 +34,7 @@ let () = Printf.printf "Working on dataset: %s\n" (name);;
 
 let find_max list = List.fold_left (fun a ls -> let new_a = List.fold_left (fun a l -> if l > a then l else a) 0 ls in if new_a > a then new_a else a) 0 list;;
 
-let (g, predictions, labels) = cross_validate 4 depth f;;
+let (g, predictions, labels, training_error) = select_model (Some 1) depth f;;
 let () = print_graph g;;
 let () = write_dot_to_file g output_file;;
 let max_label = find_max labels;;
