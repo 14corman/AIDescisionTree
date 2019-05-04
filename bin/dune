@@ -1,4 +1,4 @@
 (executables
-	(names BuildDTree BuildDTreeDepth Classifier main)
+	(names BuildDTree BuildDTreeDepth Classifier)
 	(libraries ocamlgraph Str)
 )
