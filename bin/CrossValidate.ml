@@ -154,21 +154,26 @@ let select_model (low : int option) (high : int option) (data_file : string) =
     | None   -> 0                 (* Equivalent to ZeroR *)
     | Some c -> c
   in
+  (* Threshold for training error convergence is about two examples changing *)
+  let epsilon =
+    (8.0 /. (float_of_int (List.length labels))) /. 3.0
+  in
+  Printf.printf "Epsilon: %f\n" epsilon ;
 
   let find_max list = List.fold_left (fun a ls -> let new_a = List.fold_left (fun a l -> if l > a then l else a) 0 ls in if new_a > a then new_a else a) 0 list in
   let find_min_error list = List.fold_left (fun (pos, error) (id, value) -> if error > value then (id, value) else (pos, error)) (0, 1.0) list in
-  let rec get_errors d max_depth = 
+  let rec get_errors d max_depth last_err = 
     let (_, predicted, actual, t_err) = cross_validator 4 (Some d) (feat_map, labels, value_map) in
     let val_error = 1.0 -. (accuracy predicted actual (find_max actual)) in
-    if val_error -. t_err > 0.005 then ([], []) else
-      let (training_error2, validation_error2) = get_errors (d + 1) max_depth in
+    if Float.abs (last_err -. t_err) < epsilon then ([t_err], [(d, val_error)]) else
+      let (training_error2, validation_error2) = get_errors (d + 1) max_depth t_err in
       (t_err :: training_error2,
        (d, val_error) :: validation_error2) in
 
   (* Gather (depth, validation error) until the max_depth is reached or the training error converges. *)
   let (training_errs, validation_errs) = match high with
-    | None           -> get_errors min_depth 10
-    | Some max_depth -> get_errors min_depth max_depth
+    | None           -> get_errors min_depth (List.length labels) 0.0
+    | Some max_depth -> get_errors min_depth max_depth 0.0
   in
   (* The first element in training_errs is for the greatest depth.
      Starting from the lowest depth, check for a stall in the decrease in training error.
@@ -179,7 +184,7 @@ let select_model (low : int option) (high : int option) (data_file : string) =
   Printf.printf "validate errs: [" ; List.iter (fun (d, err) -> Printf.printf "(%d, %f); " d err) validation_errs ; Printf.printf "]\n";
   let winning_depth = fst (find_min_error validation_errs) in
   Printf.printf "winning depth: %i" winning_depth;
-  cross_validator 4 (Some winning_depth) (feat_map, labels, value_map)
+  (* cross_validator 4 (Some winning_depth) (feat_map, labels, value_map) *)
 ;;
 
 
