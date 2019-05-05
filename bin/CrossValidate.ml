@@ -195,7 +195,7 @@ let select_model (low : int option) (high : int option) (delta : float option) (
   Printf.printf "validate errs: [" ; List.iter (fun (d, err) -> Printf.printf "(%d, %f); " d err) validation_errs ; Printf.printf "]\n";
   let winning_depth = fst (find_min_error validation_errs) in
   Printf.printf "Winning depth: %i\n" winning_depth;
-  (* cross_validator 4 (Some winning_depth) (feat_map, labels, value_map) *)
+  cross_validator 4 (Some winning_depth) (feat_map, labels, value_map)
 ;;
 
 
