@@ -1,4 +1,4 @@
-open DecisionTree ;;
+
 open TreeClassifier ;;
 open Parser ;;
 open Metrics ;;
@@ -56,15 +56,15 @@ let rec partition (k : int) examples partitions =
 ;;
 
 (* Partitions all of the values in a map into lists of k lists *)
-let partition_map (k : int) (feature_map : int list DTree.Feature_map.t) =
-  DTree.Feature_map.map (fun v-> partition k v []) feature_map
+let partition_map (k : int) (feature_map : int list Feature_map.t) =
+  Feature_map.map (fun v-> partition k v []) feature_map
 ;;
 
 
-let shuffle_and_partition (k : int) (feature_map : int list DTree.Feature_map.t) (labels : int list) =
+let shuffle_and_partition (k : int) (feature_map : int list Feature_map.t) (labels : int list) =
   Random.self_init () ;
   let seed = Random.bits () in
-  let feat_map = DTree.Feature_map.map (fisher_yates seed) feature_map in
+  let feat_map = Feature_map.map (fisher_yates seed) feature_map in
   let labs = fisher_yates seed labels in
   (* let (feat_map, labs) = shuffle features feature_map labels in *)
   (partition_map k feat_map, partition k labs [])
@@ -87,10 +87,10 @@ let rec combine_list_partitions l (exclude : int) =
 (* Returns two maps. One's values are the excluded lists from combine_line_partitions.
    The other's values are the combined lists from combine_list_partitions. *)
 let combine_map_partitions m (exclude : int) =
-  DTree.Feature_map.fold (fun f ps (ex, com) ->
+  Feature_map.fold (fun f ps (ex, com) ->
       let (excluded, combined) = combine_list_partitions ps exclude in
-      (DTree.Feature_map.add f excluded ex, DTree.Feature_map.add f combined com))
-    m (DTree.Feature_map.empty, DTree.Feature_map.empty)
+      (Feature_map.add f excluded ex, Feature_map.add f combined com))
+    m (Feature_map.empty, Feature_map.empty)
 ;;
 
 (* Builds a tree using all but the partitioneth list in the partitioned dataset. 
@@ -197,6 +197,3 @@ let select_model (low : int option) (high : int option) (delta : float option) (
   Printf.printf "Winning depth: %i\n" winning_depth;
   cross_validator 4 (Some winning_depth) (feat_map, labels, value_map)
 ;;
-
-
-
