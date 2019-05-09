@@ -1,3 +1,7 @@
+(** 
+   Does a depth first search on a decision tree to make a prediction given an example or many examples.
+*)
+
 open DecisionTree
 include DTree
 

@@ -1,3 +1,7 @@
+(** 
+   Builds a decision tree at the best possible depth between 1 and the given max depth.
+*)
+
 open TreeClassifier;;
 open Metrics;;
 open CrossValidate;;

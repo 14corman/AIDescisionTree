@@ -1,3 +1,7 @@
+(** 
+   Builds a tree of maximum depth given a data file.
+*)
+
 open TreeClassifier;;
 open Parser;;
 open Metrics;;

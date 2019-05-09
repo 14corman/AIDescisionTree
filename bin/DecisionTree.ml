@@ -1,3 +1,9 @@
+(** 
+   This file builds a decision tree from the ocamlgraph library. It can then 
+   be written to a dot file or to the standard output. It can also read in a
+   dot file and build a tree from it.
+*)
+
 open Graph;;
 
 module EDGE = struct

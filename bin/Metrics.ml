@@ -1,3 +1,9 @@
+(** 
+   Can calculate accuracy and F1 score using a list of predictions and a list of labels in the same order. 
+   It uses a micro average for accuracy and F1 score. The file can also print the confusion matrices for 
+   all possible classes.
+*)
+
 (* Creates a list with the range of integers [low, high) *)
 let rec range low high = if low >= high then [] else low :: (range (low+1) high) ;;
 

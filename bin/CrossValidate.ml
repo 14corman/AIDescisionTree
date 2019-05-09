@@ -1,8 +1,12 @@
+(** 
+   Runs a selector algorithm using 4 fold cross validation to select the best depth to build a tree on. The cross validation
+   uses a fisher yates shuffling pattern to first shuffle then partition examples into 4 folds that are then used for test
+   and validation sets.
+*)
 
 open TreeClassifier ;;
 open Parser ;;
 open Metrics ;;
-(* open Printf ;; *)
 
 (* Shuffle a list using the input seed.
    The same seed will shuffle lists of equal length the same way

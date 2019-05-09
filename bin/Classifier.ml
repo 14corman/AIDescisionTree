@@ -1,3 +1,9 @@
+(** 
+   Takes in a dot file that is a decision tree and a csv file that is a dataset. It then gets predicitions for
+   all of the examples from the csv file using the decision tree. It prints out every prediciton and the actual
+   class of that prediction. It then prints out the F1 score calculated from those predicitons and labels.
+*)
+
 open TreeClassifier;;
 open Parser;;
 open Metrics;;

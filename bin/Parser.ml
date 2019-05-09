@@ -1,5 +1,10 @@
+(** 
+   This file parses in a csv file to create a list of classes, a feature map where the key is a feature name and the value is 
+   a list of examples for that feature, and a feature map where the key is the feature name and the value is the maximum
+   attribute that the feature can be.
+*)
+
 open DecisionTree ;;
-(*open Printf *);;
 
 (* Function to strip whitespace from the front and end of a string *)
 let strip_ws str = Str.replace_first (Str.regexp "[ \n\r\x0c\t]+$") "" (Str.replace_first (Str.regexp "^[ \n\r\x0c\t]+") "" str) ;;
@@ -61,21 +66,21 @@ let parse (file : string) =
         let rec readlines feat_map labels val_map feat_domain =
           let line = strip_ws (try input_line in_file with End_of_file -> "") in
           if String.contains line '?' then readlines feat_map labels val_map feat_domain else
-          match Str.split (Str.regexp ",") line with
-          | [] -> close_in in_file ; (feat_map, labels, val_map)
-          | (_ :: []) -> close_in in_file ; (feat_map, labels, val_map)
-          | (ex_label :: ex_feats) -> (
-              let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
-              let class_domain =
-                (* See if there was a new class label in this example *)
-                let domain = DTree.Feature_map.find "class" f_domain in
-                if (DTree.Feature_map.mem ex_label domain) then
-                  domain
-                else
-                  DTree.Feature_map.add ex_label (map_len domain) domain
-              in
-              readlines f_map ((DTree.Feature_map.find ex_label class_domain) :: labels) v_map (DTree.Feature_map.add "class" class_domain f_domain)
-            )
+            match Str.split (Str.regexp ",") line with
+            | [] -> close_in in_file ; (feat_map, labels, val_map)
+            | (_ :: []) -> close_in in_file ; (feat_map, labels, val_map)
+            | (ex_label :: ex_feats) -> (
+                let (f_map, v_map, f_domain) = add_feats feat_map val_map feat_domain features ex_feats in
+                let class_domain =
+                  (* See if there was a new class label in this example *)
+                  let domain = DTree.Feature_map.find "class" f_domain in
+                  if (DTree.Feature_map.mem ex_label domain) then
+                    domain
+                  else
+                    DTree.Feature_map.add ex_label (map_len domain) domain
+                in
+                readlines f_map ((DTree.Feature_map.find ex_label class_domain) :: labels) v_map (DTree.Feature_map.add "class" class_domain f_domain)
+              )
         in
         readlines feature_map [] value_counts feature_domain
       )
